@@ -13,7 +13,7 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 __version__ = '2.0.0'
 
 setup(
-    name='bareautils',
+    name='bareutils',
     version=__version__,
     description='Utilities for bareASGI and bareClient',
     long_description=long_description,
