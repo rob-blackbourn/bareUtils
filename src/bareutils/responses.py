@@ -1,12 +1,12 @@
 import json
-from typing import List, Union, Mapping, Any
+from typing import List, Union, Mapping, Any, Optional
 from baretypes import Header, HttpResponse
 from .streaming import bytes_writer
 
 
 def bytes_response(
         status: int,
-        headers: List[Header],
+        headers: Optional[List[Header]],
         buf: bytes,
         content_type: bytes = b'application/octet-stream',
         chunk_size: int = -1
@@ -21,15 +21,19 @@ def bytes_response(
     :param chunk_size: The size of each chunk to send or -1 to send as a single chunk.
     :return: The HTTP response.
     """
+
+    headers = [] if headers is None else list(headers)
+
     headers.append((b'content-type', content_type))
     if chunk_size == -1:
         headers.append((b'content-length', str(len(buf)).encode('ascii')))
+
     return status, headers, bytes_writer(buf, chunk_size)
 
 
 def text_response(
         status: int,
-        headers: List[Header],
+        headers: Optional[List[Header]],
         text: str,
         encoding: str = 'utf-8',
         content_type: bytes = b'text/plain',
@@ -52,7 +56,7 @@ def text_response(
 
 def json_response(
         status: int,
-        headers: List[Header],
+        headers: Optional[List[Header]],
         obj: Union[List[Any], Mapping[str, Any]],
         content_type: bytes = b'application/json',
         dumps=json.dumps,
