@@ -2,17 +2,15 @@ from __future__ import annotations
 from abc import ABCMeta, abstractmethod
 from typing import AsyncIterator, Optional
 import zlib
-from .streaming import bytes_writer
+from .streaming import bytes_writer, bytes_reader
 
 
 class Compressor(metaclass=ABCMeta):
     """A class to represent the methods available on a compressor"""
 
-
     @abstractmethod
     def compress(self, buf: bytes) -> bytes:
         ...
-
 
     def flush(self) -> bytes:
         ...
@@ -77,34 +75,28 @@ def compression_writer(
 class Decompressor(metaclass=ABCMeta):
     """A class to represent the methods available on a compressor"""
 
-
     @property
     @abstractmethod
     def unused_data(self) -> bytes:
         ...
-
 
     @property
     @abstractmethod
     def unconsumed_tail(self) -> bytes:
         ...
 
-
     @property
     @abstractmethod
     def eof(self) -> bool:
         ...
 
-
     @abstractmethod
     def decompress(self, buf: bytes, max_length: int = 0) -> bytes:
         ...
 
-
     @abstractmethod
     def flush(self, length: Optional[int] = None) -> bytes:
         ...
-
 
     @abstractmethod
     def copy(self) -> Decompressor:
@@ -124,7 +116,7 @@ def make_deflate_decompressobj() -> Decompressor:
 
     :return: A deflate compressor.
     """
-    return zlib.decompressobj(9, zlib.DEFLATED, -zlib.MAX_WBITS)
+    return zlib.decompressobj(-zlib.MAX_WBITS)
 
 
 def make_compress_decompressobj() -> Decompressor:
@@ -144,3 +136,7 @@ async def compression_reader_adapter(
     async for item in reader:
         yield decompressobj.decompress(item)
     yield decompressobj.flush()
+
+
+async def compression_reader(source: AsyncIterator[bytes], decompressobj: Decompressor) -> bytes:
+    return await bytes_reader(compression_reader_adapter(source, decompressobj))
