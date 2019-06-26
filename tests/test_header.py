@@ -96,3 +96,14 @@ def test_set_cookie():
     unpacked = header.set_cookie(headers)
     assert b'foo' in unpacked and b'bar' in unpacked
     assert len(unpacked[b'foo']) == 3 and len(unpacked[b'bar']) == 1
+
+
+def test_content_type():
+    media_type, params = header.content_type([(b'content-type', b'application/json')])
+    assert media_type == b'application/json' and params is None
+    media_type, params = header.content_type([(b'content-type', b'text/html; charset=utf-8')])
+    assert media_type == b'text/html' and params is not None
+    assert len(params) == 1 and params[b'charset'] == b'utf-8'
+    media_type, params = header.content_type([(b'content-type', b'multipart/form-data; boundary=something')])
+    assert media_type == b'multipart/form-data' and params is not None
+    assert len(params) == 1 and params[b'boundary'] == b'something'

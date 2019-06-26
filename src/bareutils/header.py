@@ -1,6 +1,6 @@
 import collections
 from datetime import datetime
-from typing import List, Optional, Mapping, MutableMapping, Any
+from typing import List, Optional, Mapping, MutableMapping, Any, Tuple
 from baretypes import Header
 from .cookies import decode_cookies, decode_set_cookie
 
@@ -187,3 +187,22 @@ def if_modified_since(headers: List[Header]) -> Optional[datetime]:
 
 def last_modified(headers: List[Header]) -> Optional[datetime]:
     return find_date(b'if-modified-since', headers)
+
+
+def content_type(headers: List[Header]) -> Optional[Tuple[bytes, Optional[Mapping[bytes, float]]]]:
+    """Returns the content type is any otherwise None
+
+    :param headers: The headers
+    :return: A tuple of the media type and a mapping of the parameters or None if absent.
+    """
+    value = find(b'content-type', headers)
+    if value is None:
+        return None
+
+    media_type, sep, rest = value.partition(b';')
+    parameters = {
+        first.strip(): rest.strip()
+        for first, sep, rest in [x.partition(b'=') for x in rest.split(b';')] if first
+    } if sep == b';' else None
+
+    return media_type, parameters
