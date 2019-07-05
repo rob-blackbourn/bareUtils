@@ -1,7 +1,7 @@
 import collections
 from datetime import datetime
 from enum import Enum, auto
-from typing import List, Optional, Mapping, MutableMapping, Any, Tuple, Callable, NamedTuple
+from typing import List, Optional, Mapping, MutableMapping, Any, Tuple, Callable, NamedTuple, Union
 from baretypes import Header
 from .cookies import decode_cookies, decode_set_cookie
 
@@ -18,6 +18,13 @@ class _Parser(NamedTuple):
 
 
 _PARSERS: MutableMapping[bytes, _Parser] = dict()
+
+
+def _pass_through(value: bytes) -> bytes:
+    return value
+
+
+_DEFAULT_PARSER = _Parser(_pass_through, _MergeType.APPEND)
 
 
 def index(name: bytes, headers: List[Header]) -> int:
@@ -90,6 +97,14 @@ def find_date(name: bytes, headers: List[Header]) -> Optional[datetime]:
     return datetime.strptime(value.decode(), '%a, %d %b %Y %H:%M:%S %Z') if value else None
 
 
+def _parse_comma_separated_list(value: bytes) -> List[bytes]:
+    return [item.strip() for item in value.split(b',')]
+
+
+def _parse_int(value: bytes) -> int:
+    return int(value)
+
+
 def parse_quality(value: bytes) -> Optional[float]:
     """Parse a quality attribute of the form 'q=0.5'
 
@@ -103,6 +118,74 @@ def parse_quality(value: bytes) -> Optional[float]:
     if k != b'q':
         raise ValueError('expected "q"')
     return float(v)
+
+
+def _parse_accept_charset(value: bytes, *, add_wildcard: bool = False) -> Mapping[bytes, float]:
+    """Parses the accept charset header into a mapping of the encoding
+    and the quality value which defaults to 1.0 if missing.
+
+    :param value: The header value.
+    :param add_wildcard: If True ensures the '*' charset is included.
+    :return: A mapping of the encodings and qualities.
+    """
+    charsets = {
+        first: parse_quality(rest) or 1.0
+        for first, sep, rest in [x.partition(b';') for x in value.split(b', ')]
+    }
+
+    if add_wildcard and b'*' not in charsets:
+        charsets[b'*'] = 1.0
+
+    return charsets
+
+
+_PARSERS[b'accept-charset'] = _Parser(_parse_accept_charset, _MergeType.NONE)
+
+
+def accept_charset(headers: List[Header], *, add_wildcard: bool = False) -> Optional[Mapping[bytes, float]]:
+    """Extracts the accept encoding header if it exists into a mapping of the encoding
+    and the quality value which defaults to 1.0 if missing.
+
+    :param headers: The headers to search.
+    :param add_wildcard: If True ensures the '*' charset is included.
+    :return: A mapping of the encodings and qualities.
+    """
+    value = find(b'accept-charset', headers)
+    return None if value is None else _parse_accept_charset(value, add_wildcard=add_wildcard)
+
+
+def _parse_accept_language(value: bytes, *, add_wildcard: bool = False) -> Mapping[bytes, float]:
+    """Parses the accept language header into a mapping of the encoding
+    and the quality value which defaults to 1.0 if missing.
+
+    :param value: The header value.
+    :param add_wildcard: If True ensures the '*' charset is included.
+    :return: A mapping of the encodings and qualities.
+    """
+    languages = {
+        first: parse_quality(rest) or 1.0
+        for first, sep, rest in [x.partition(b';') for x in value.split(b', ')]
+    }
+
+    if add_wildcard and b'*' not in languages:
+        languages[b'*'] = 1.0
+
+    return languages
+
+
+_PARSERS[b'accept-language'] = _Parser(_parse_accept_language, _MergeType.NONE)
+
+
+def accept_language(headers: List[Header], *, add_wildcard: bool = False) -> Optional[Mapping[bytes, float]]:
+    """Extracts the accept language header if it exists into a mapping of the encoding
+    and the quality value which defaults to 1.0 if missing.
+
+    :param headers: The headers to search.
+    :param add_wildcard: If True ensures the '*' charset is included.
+    :return: A mapping of the encodings and qualities.
+    """
+    value = find(b'accept-language', headers)
+    return None if value is None else _parse_accept_language(value, add_wildcard=add_wildcard)
 
 
 def _parse_accept_encoding(value: bytes, *, add_identity: bool = False) -> Mapping[bytes, float]:
@@ -139,6 +222,203 @@ def accept_encoding(headers: List[Header], *, add_identity: bool = False) -> Opt
     return None if value is None else _parse_accept_encoding(value, add_identity=add_identity)
 
 
+def _parse_media_type_and_encoding(value: bytes) -> Tuple[bytes, Optional[bytes]]:
+    media_type, sep, rest = value.partition(b';')
+    if not sep:
+        encoding = None
+    else:
+        tag, sep, encoding = rest.partition(b'=')
+        if tag != b'charset':
+            raise Exception('encoding must start with chartset')
+    return media_type.strip(), encoding.strip() if encoding else None
+
+
+def _parse_accept_patch(value: bytes) -> List[Tuple[bytes, Optional[bytes]]]:
+    """Parses the accept patch header returning a list of tuples of media type and encoding.
+
+    :param value: The header value
+    :return: A list of tuples of media type and encoding.
+    """
+    return [
+        _parse_media_type_and_encoding(item)
+        for item in value.split(b',')
+    ]
+
+
+_PARSERS[b'accept-patch'] = _Parser(_parse_accept_encoding, _MergeType.NONE)
+
+
+def accept_patch(headers: List[Header]) -> Optional[List[Tuple[bytes, Optional[bytes]]]]:
+    """
+
+    :param headers: The headers to search.
+    :return: An optional list of tuples of media type and optional charset.
+    """
+    value = find(b'accept-patch', headers)
+    return None if value is None else _parse_accept_patch(value)
+
+
+def _parse_accept_ranges(value: bytes) -> bytes:
+    return value.strip()
+
+
+_PARSERS[b'accept-ranges'] = _Parser(_parse_accept_ranges, _MergeType.NONE)
+
+
+def accept_ranges(headers: List[Header]) -> Optional[bytes]:
+    """Returns the value of the accept ranges header of None if missing
+
+    :param headers: The headers
+    :return: The header value (bytes or none)
+    """
+    value = find(b'accept-ranges', headers)
+    return None if value is None else _parse_accept_ranges(value)
+
+
+def _parse_access_control_allow_credentials(value: bytes) -> bool:
+    return value.lower() == b'true'
+
+
+_PARSERS[b'access-control-allow-credentials'] = _Parser(_parse_access_control_allow_credentials, _MergeType.NONE)
+
+
+def access_control_allow_credentials(headers: List[Header]) -> Optional[bool]:
+    """Extracts the access control allow credentials header as a bool or None if missing.
+
+    :param headers: The headers.
+    :return: a bool or None
+    """
+    value = find(b'access-control-allow-credentials', headers)
+    return None if value is None else _parse_access_control_allow_credentials(value)
+
+
+_PARSERS[b'access-control-allow-headers'] = _Parser(_parse_comma_separated_list, _MergeType.NONE)
+
+
+def access_control_allow_headers(headers: List[Header]) -> Optional[List[bytes]]:
+    value = find(b'access-control-allow-headers', headers)
+    return None if value is None else _parse_comma_separated_list(value)
+
+
+_PARSERS[b'access-control-allow-methods'] = _Parser(_parse_comma_separated_list, _MergeType.NONE)
+
+
+def access_control_allow_methods(headers: List[Header]) -> Optional[List[bytes]]:
+    value = find(b'access-control-allow-methods', headers)
+    return None if value is None else _parse_comma_separated_list(value)
+
+
+_PARSERS[b'access-control-allow-origin'] = _Parser(_pass_through, _MergeType.NONE)
+
+
+def access_control_allow_origin(headers: List[Header]) -> Optional[bytes]:
+    return find(b'access-control-allow-origin', headers)
+
+
+def _parse_access_control_expose_headers(value: bytes, *, add_simple_response_headers: bool = False) -> List[bytes]:
+    headers = _parse_comma_separated_list(value)
+    if add_simple_response_headers:
+        headers.extend([
+            b'cache-control',
+            b'content-language',
+            b'content-type',
+            b'expires',
+            b'last-modified',
+            b'pragma',
+        ])
+    return headers
+
+
+_PARSERS[b'access-control-expose-headers'] = _Parser(_parse_access_control_expose_headers, _MergeType.NONE)
+
+
+def access_control_expose_headers(
+        headers: List[Header],
+        *,
+        add_simple_response_headers: bool = False
+) -> Optional[List[bytes]]:
+    value = find(b'access-control-expose-headers', headers)
+    return None if value is None else _parse_access_control_expose_headers(
+        value,
+        add_simple_response_headers=add_simple_response_headers
+    )
+
+
+_PARSERS[b'access-control-max-age'] = _Parser(_parse_int, _MergeType.NONE)
+
+
+def access_control_max_age(headers: List[Header]) -> Optional[int]:
+    value = find(b'access-control-max-age', headers)
+    return None if value is None else _parse_int(value)
+
+
+_PARSERS[b'access-control-request-headers'] = _Parser(_parse_comma_separated_list, _MergeType.NONE)
+
+
+def access_control_request_headers(headers: List[Header]) -> Optional[List[bytes]]:
+    value = find(b'access-control-request-headers', headers)
+    return None if value is None else _parse_comma_separated_list(value)
+
+
+_PARSERS[b'access-control-request-method'] = _Parser(_pass_through, _MergeType.NONE)
+
+
+def access_control_request_method(headers: List[Header]) -> Optional[bytes]:
+    value = find(b'access-control-request-method', headers)
+    return None if value is None else _pass_through(value)
+
+
+_PARSERS[b'age'] = _Parser(_parse_int, _MergeType.NONE)
+
+
+def age(headers: List[Header]) -> Optional[int]:
+    value = find(b'age', headers)
+    return None if value is None else _parse_int(value)
+
+
+_PARSERS[b'allow'] = _Parser(_parse_comma_separated_list, _MergeType.NONE)
+
+
+def allow(headers: List[Header]) -> Optional[List[bytes]]:
+    value = find(b'allow', headers)
+    return None if value is None else _parse_comma_separated_list(value)
+
+
+def _parse_authorization(value: bytes) -> Tuple[bytes, bytes]:
+    auth_type, _, credentials = value.partition(b' ')
+    return auth_type.strip(), credentials
+
+
+def _parse_cache_control(value: bytes) -> Mapping[bytes, Optional[int]]:
+    return {
+        name.strip(): int(rest) if sep == b'=' else None
+        for name, sep, rest in [item.partition(b'=') for item in value.split(b',')]
+    }
+
+
+_PARSERS[b'cache-control'] = _Parser(_parse_cache_control, _MergeType.NONE)
+
+
+def cache_control(headers: List[Header]) -> Optional[Mapping[bytes, Optional[int]]]:
+    value = find(b'cache-control', headers)
+    return None if value is None else _parse_cache_control(value)
+
+
+_PARSERS[b'clear-site-data'] = _Parser(_parse_comma_separated_list, _MergeType.NONE)
+
+
+def clear_site_data(headers: List[Header]) -> Optional[List[bytes]]:
+    value = find(b'clear-site-data', headers)
+    return None if value is None else _parse_comma_separated_list(value)
+
+
+_PARSERS[b'connection'] = _Parser(_pass_through, _MergeType.NONE)
+
+
+def connection(headers: List[Header]) -> Optional[bytes]:
+    return find(b'connection', headers)
+
+
 def _parse_content_encoding(value: bytes, *, add_identity: bool = False) -> List[bytes]:
     """Parses the content encodings into a list.
 
@@ -168,16 +448,7 @@ def content_encoding(headers: List[Header], *, add_identity: bool = False) -> Op
     return None if value is None else _parse_content_encoding(value, add_identity=add_identity)
 
 
-def _parse_content_length(value: bytes) -> int:
-    """Parses the content length as an integer.
-
-    :param value: The header value.
-    :return: The length as an integer or None is absent.
-    """
-    return int(value)
-
-
-_PARSERS[b'content-length'] = _Parser(_parse_content_length, _MergeType.NONE)
+_PARSERS[b'content-length'] = _Parser(_parse_int, _MergeType.NONE)
 
 
 def content_length(headers: List[Header]) -> Optional[int]:
@@ -187,13 +458,40 @@ def content_length(headers: List[Header]) -> Optional[int]:
     :return: The length as an integer or None is absent.
     """
     value = find(b'content-length', headers)
-    return None if value is None else _parse_content_length(value)
+    return None if value is None else _parse_int(value)
+
+
+_PARSERS[b'content-location'] = _Parser(_pass_through, _MergeType.NONE)
+
+
+def content_location(headers: List[Header]) -> Optional[bytes]:
+    return find(b'content-location', headers)
+
+
+def _parse_content_range(value: bytes) -> Tuple[bytes, Optional[Tuple[int, int]], Optional[int]]:
+    unit, _, rest = value.strip().partition(b' ')
+    range, _, size = rest.strip().partition(b'/')
+    if range == b'*':
+        range = None
+    else:
+        start, _, end = range.partition(b'-')
+        range = (int(start), int(end))
+    size = None if size.strip() == b'*' else int(size)
+    return unit, range, size
+
+
+_PARSERS[b'content-range'] = _Parser(_parse_content_range, _MergeType.NONE)
+
+
+def content_range(headers: List[Header]) -> Optional[Tuple[bytes, Optional[Tuple[int, int]], Optional[int]]]:
+    value = find(b'content-range', headers)
+    return None if value is None else _parse_content_range(value)
 
 
 def _parse_cookie(value: bytes) -> Mapping[bytes, List[bytes]]:
     """Returns the cookies as a name-value mapping.
 
-    :param headers: The headers.
+    :param value: The header value.
     :return: The cookies as a name-value mapping.
     """
     cookies: MutableMapping[bytes, List[bytes]] = dict()
@@ -281,10 +579,46 @@ def last_modified(headers: List[Header]) -> Optional[datetime]:
     return None if value is None else _parse_date(value)
 
 
+def _parse_content_disposition(value: bytes) -> Tuple[bytes, Optional[Mapping[bytes, float]]]:
+    """Returns the content type
+
+    :param value: The header value
+    :return: A tuple of the media type and a mapping of the parameters or None if absent.
+    """
+    media_type, sep, rest = value.partition(b';')
+    parameters = {
+        first.strip(): rest.strip(b'"')
+        for first, sep, rest in [x.partition(b'=') for x in rest.split(b';')] if first
+    } if sep == b';' else None
+
+    return media_type, parameters
+
+
+_PARSERS[b'content-disposition'] = _Parser(_parse_content_disposition, _MergeType.NONE)
+
+
+def content_disposition(headers: List[Header]) -> Optional[Tuple[bytes, Optional[Mapping[bytes, float]]]]:
+    """Returns the content type if any otherwise None
+
+    :param headers: The headers
+    :return: A tuple of the media type and a mapping of the parameters or None if absent.
+    """
+    value = find(b'content-disposition', headers)
+    return None if value is None else _parse_content_disposition(value)
+
+
+_PARSERS[b'content-language'] = _Parser(_parse_comma_separated_list, _MergeType.NONE)
+
+
+def content_language(headers: List[Header]) -> Optional[List[bytes]]:
+    value = find(b'content-language', headers)
+    return None if value is None else _parse_comma_separated_list(value)
+
+
 def _parse_content_type(value: bytes) -> Tuple[bytes, Optional[Mapping[bytes, float]]]:
     """Returns the content type
 
-    :param headers: The headers
+    :param value: The header value
     :return: A tuple of the media type and a mapping of the parameters or None if absent.
     """
     media_type, sep, rest = value.partition(b';')
@@ -307,9 +641,6 @@ def content_type(headers: List[Header]) -> Optional[Tuple[bytes, Optional[Mappin
     """
     value = find(b'content-type', headers)
     return None if value is None else _parse_content_type(value)
-
-
-_DEFAULT_PARSER = _Parser(lambda x: x, _MergeType.APPEND)
 
 
 def collect(headers: List[Header]) -> Mapping[bytes, Any]:
