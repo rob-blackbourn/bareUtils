@@ -105,7 +105,7 @@ def parse_quality(value: bytes) -> Optional[float]:
     return float(v)
 
 
-def parse_accept_encoding(value: bytes, *, add_identity: bool = False) -> Mapping[bytes, float]:
+def _parse_accept_encoding(value: bytes, *, add_identity: bool = False) -> Mapping[bytes, float]:
     """Parses the accept encoding header into a mapping of the encoding
     and the quality value which defaults to 1.0 if missing.
 
@@ -124,7 +124,7 @@ def parse_accept_encoding(value: bytes, *, add_identity: bool = False) -> Mappin
     return encodings
 
 
-_PARSERS[b'accept-encoding'] = _Parser(parse_accept_encoding, _MergeType.NONE)
+_PARSERS[b'accept-encoding'] = _Parser(_parse_accept_encoding, _MergeType.NONE)
 
 
 def accept_encoding(headers: List[Header], *, add_identity: bool = False) -> Optional[Mapping[bytes, float]]:
@@ -136,10 +136,10 @@ def accept_encoding(headers: List[Header], *, add_identity: bool = False) -> Opt
     :return: A mapping of the encodings and qualities.
     """
     value = find(b'accept-encoding', headers)
-    return None if value is None else parse_accept_encoding(value, add_identity=add_identity)
+    return None if value is None else _parse_accept_encoding(value, add_identity=add_identity)
 
 
-def parse_content_encoding(value: bytes, *, add_identity: bool = False) -> List[bytes]:
+def _parse_content_encoding(value: bytes, *, add_identity: bool = False) -> List[bytes]:
     """Parses the content encodings into a list.
 
     :param value: The header value.
@@ -154,7 +154,7 @@ def parse_content_encoding(value: bytes, *, add_identity: bool = False) -> List[
     return encodings
 
 
-_PARSERS[b'content-encoding'] = _Parser(parse_content_encoding, _MergeType.NONE)
+_PARSERS[b'content-encoding'] = _Parser(_parse_content_encoding, _MergeType.NONE)
 
 
 def content_encoding(headers: List[Header], *, add_identity: bool = False) -> Optional[List[bytes]]:
@@ -165,10 +165,10 @@ def content_encoding(headers: List[Header], *, add_identity: bool = False) -> Op
     :return: The list of content encodings or None is absent.
     """
     value = find(b'content-encoding', headers)
-    return None if value is None else parse_content_encoding(value, add_identity=add_identity)
+    return None if value is None else _parse_content_encoding(value, add_identity=add_identity)
 
 
-def parse_content_length(value: bytes) -> int:
+def _parse_content_length(value: bytes) -> int:
     """Parses the content length as an integer.
 
     :param value: The header value.
@@ -177,7 +177,7 @@ def parse_content_length(value: bytes) -> int:
     return int(value)
 
 
-_PARSERS[b'content-length'] = _Parser(parse_content_length, _MergeType.NONE)
+_PARSERS[b'content-length'] = _Parser(_parse_content_length, _MergeType.NONE)
 
 
 def content_length(headers: List[Header]) -> Optional[int]:
@@ -187,10 +187,10 @@ def content_length(headers: List[Header]) -> Optional[int]:
     :return: The length as an integer or None is absent.
     """
     value = find(b'content-length', headers)
-    return None if value is None else parse_content_length(value)
+    return None if value is None else _parse_content_length(value)
 
 
-def parse_cookie(value: bytes) -> Mapping[bytes, List[bytes]]:
+def _parse_cookie(value: bytes) -> Mapping[bytes, List[bytes]]:
     """Returns the cookies as a name-value mapping.
 
     :param headers: The headers.
@@ -202,7 +202,7 @@ def parse_cookie(value: bytes) -> Mapping[bytes, List[bytes]]:
     return cookies
 
 
-_PARSERS[b'cookie'] = _Parser(parse_cookie, _MergeType.EXTEND)
+_PARSERS[b'cookie'] = _Parser(_parse_cookie, _MergeType.EXTEND)
 
 
 def cookie(headers: List[Header]) -> Mapping[bytes, List[bytes]]:
@@ -213,7 +213,7 @@ def cookie(headers: List[Header]) -> Mapping[bytes, List[bytes]]:
     """
     cookies: MutableMapping[bytes, List[bytes]] = dict()
     for value in find_all(b'cookie', headers):
-        for k, v in parse_cookie(value).items():
+        for k, v in _parse_cookie(value).items():
             cookies.setdefault(k, []).extend(v)
     return cookies
 
@@ -234,7 +234,7 @@ def set_cookie(headers: List[Header]) -> Mapping[bytes, List[Mapping[str, Any]]]
     return set_cookies
 
 
-def parse_vary(value: bytes) -> List[bytes]:
+def _parse_vary(value: bytes) -> List[bytes]:
     """Returns the vary header value as a list of headers.
 
     :param value: The header value.
@@ -243,7 +243,7 @@ def parse_vary(value: bytes) -> List[bytes]:
     return value.split(b', ') if value is not None else None
 
 
-_PARSERS[b'vary'] = _Parser(parse_vary, _MergeType.NONE)
+_PARSERS[b'vary'] = _Parser(_parse_vary, _MergeType.NONE)
 
 
 def vary(headers: List[Header]) -> Optional[List[bytes]]:
@@ -253,10 +253,10 @@ def vary(headers: List[Header]) -> Optional[List[bytes]]:
     :return: A list of the vary headers.
     """
     value = find(b'vary', headers)
-    return None if value is None else parse_vary(value)
+    return None if value is None else _parse_vary(value)
 
 
-def parse_date(value: bytes) -> datetime:
+def _parse_date(value: bytes) -> datetime:
     """parse as date.
 
     :param value: The header value.
@@ -265,23 +265,23 @@ def parse_date(value: bytes) -> datetime:
     return datetime.strptime(value.decode(), '%a, %d %b %Y %H:%M:%S %Z') if value else None
 
 
-_PARSERS[b'if-modified-since'] = _Parser(parse_date, _MergeType.NONE)
+_PARSERS[b'if-modified-since'] = _Parser(_parse_date, _MergeType.NONE)
 
 
 def if_modified_since(headers: List[Header]) -> Optional[datetime]:
     value = find(b'if-modified-since', headers)
-    return None if value is None else parse_date(value)
+    return None if value is None else _parse_date(value)
 
 
-_PARSERS[b'last-modified'] = _Parser(parse_date, _MergeType.NONE)
+_PARSERS[b'last-modified'] = _Parser(_parse_date, _MergeType.NONE)
 
 
 def last_modified(headers: List[Header]) -> Optional[datetime]:
     value = find(b'last-modified', headers)
-    return None if value is None else parse_date(value)
+    return None if value is None else _parse_date(value)
 
 
-def parse_content_type(value: bytes) -> Tuple[bytes, Optional[Mapping[bytes, float]]]:
+def _parse_content_type(value: bytes) -> Tuple[bytes, Optional[Mapping[bytes, float]]]:
     """Returns the content type
 
     :param headers: The headers
@@ -296,7 +296,7 @@ def parse_content_type(value: bytes) -> Tuple[bytes, Optional[Mapping[bytes, flo
     return media_type, parameters
 
 
-_PARSERS[b'content-type'] = _Parser(parse_content_type, _MergeType.NONE)
+_PARSERS[b'content-type'] = _Parser(_parse_content_type, _MergeType.NONE)
 
 
 def content_type(headers: List[Header]) -> Optional[Tuple[bytes, Optional[Mapping[bytes, float]]]]:
@@ -306,7 +306,7 @@ def content_type(headers: List[Header]) -> Optional[Tuple[bytes, Optional[Mappin
     :return: A tuple of the media type and a mapping of the parameters or None if absent.
     """
     value = find(b'content-type', headers)
-    return None if value is None else parse_content_type(value)
+    return None if value is None else _parse_content_type(value)
 
 
 _DEFAULT_PARSER = _Parser(lambda x: x, _MergeType.APPEND)
