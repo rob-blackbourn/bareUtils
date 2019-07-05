@@ -1,8 +1,23 @@
 import collections
 from datetime import datetime
-from typing import List, Optional, Mapping, MutableMapping, Any, Tuple
+from enum import Enum, auto
+from typing import List, Optional, Mapping, MutableMapping, Any, Tuple, Callable, NamedTuple
 from baretypes import Header
 from .cookies import decode_cookies, decode_set_cookie
+
+
+class _MergeType(Enum):
+    NONE = auto()
+    EXTEND = auto()
+    APPEND = auto()
+
+
+class _Parser(NamedTuple):
+    parse: Callable[[bytes], Any]
+    merge_type: _MergeType
+
+
+_PARSERS: MutableMapping[bytes, _Parser] = dict()
 
 
 def index(name: bytes, headers: List[Header]) -> int:
@@ -64,6 +79,17 @@ def to_dict(headers: List[Header]) -> MutableMapping[bytes, List[bytes]]:
     return items
 
 
+def find_date(name: bytes, headers: List[Header]) -> Optional[datetime]:
+    """Find a header containing a date.
+
+    :param name: The name of the header.
+    :param headers: The headers.
+    :return: The date if found, otherwise None.
+    """
+    value = find(name, headers)
+    return datetime.strptime(value.decode(), '%a, %d %b %Y %H:%M:%S %Z') if value else None
+
+
 def parse_quality(value: bytes) -> Optional[float]:
     """Parse a quality attribute of the form 'q=0.5'
 
@@ -79,18 +105,14 @@ def parse_quality(value: bytes) -> Optional[float]:
     return float(v)
 
 
-def accept_encoding(headers: List[Header], *, add_identity: bool = False) -> Optional[Mapping[bytes, float]]:
-    """Extracts the accept encoding header if it exists into a mapping of the encoding
+def parse_accept_encoding(value: bytes, *, add_identity: bool = False) -> Mapping[bytes, float]:
+    """Parses the accept encoding header into a mapping of the encoding
     and the quality value which defaults to 1.0 if missing.
 
-    :param headers: The headers to search.
+    :param value: The header value.
     :param add_identity: If True ensures the 'identity' encoding is included.
     :return: A mapping of the encodings and qualities.
     """
-    value = find(b'accept-encoding', headers)
-    if value is None:
-        return None
-
     encodings = {
         first: parse_quality(rest) or 1.0
         for first, sep, rest in [x.partition(b';') for x in value.split(b', ')]
@@ -102,6 +124,39 @@ def accept_encoding(headers: List[Header], *, add_identity: bool = False) -> Opt
     return encodings
 
 
+_PARSERS[b'accept-encoding'] = _Parser(parse_accept_encoding, _MergeType.NONE)
+
+
+def accept_encoding(headers: List[Header], *, add_identity: bool = False) -> Optional[Mapping[bytes, float]]:
+    """Extracts the accept encoding header if it exists into a mapping of the encoding
+    and the quality value which defaults to 1.0 if missing.
+
+    :param headers: The headers to search.
+    :param add_identity: If True ensures the 'identity' encoding is included.
+    :return: A mapping of the encodings and qualities.
+    """
+    value = find(b'accept-encoding', headers)
+    return None if value is None else parse_accept_encoding(value, add_identity=add_identity)
+
+
+def parse_content_encoding(value: bytes, *, add_identity: bool = False) -> List[bytes]:
+    """Parses the content encodings into a list.
+
+    :param value: The header value.
+    :param add_identity: If True ensures the 'identity' encoding is included.
+    :return: The list of content encodings or None is absent.
+    """
+    encodings = value.split(b', ')
+
+    if add_identity and b'identity' not in encodings:
+        encodings.append(b'identity')
+
+    return encodings
+
+
+_PARSERS[b'content-encoding'] = _Parser(parse_content_encoding, _MergeType.NONE)
+
+
 def content_encoding(headers: List[Header], *, add_identity: bool = False) -> Optional[List[bytes]]:
     """Returns the content encodings in a list or None if they were not specified.
 
@@ -110,15 +165,19 @@ def content_encoding(headers: List[Header], *, add_identity: bool = False) -> Op
     :return: The list of content encodings or None is absent.
     """
     value = find(b'content-encoding', headers)
-    if value is None:
-        return None
+    return None if value is None else parse_content_encoding(value, add_identity=add_identity)
 
-    encodings = value.split(b', ')
 
-    if add_identity and b'identity' not in encodings:
-        encodings.append(b'identity')
+def parse_content_length(value: bytes) -> int:
+    """Parses the content length as an integer.
 
-    return encodings
+    :param value: The header value.
+    :return: The length as an integer or None is absent.
+    """
+    return int(value)
+
+
+_PARSERS[b'content-length'] = _Parser(parse_content_length, _MergeType.NONE)
 
 
 def content_length(headers: List[Header]) -> Optional[int]:
@@ -128,10 +187,22 @@ def content_length(headers: List[Header]) -> Optional[int]:
     :return: The length as an integer or None is absent.
     """
     value = find(b'content-length', headers)
-    if value is None:
-        return None
+    return None if value is None else parse_content_length(value)
 
-    return int(value)
+
+def parse_cookie(value: bytes) -> Mapping[bytes, List[bytes]]:
+    """Returns the cookies as a name-value mapping.
+
+    :param headers: The headers.
+    :return: The cookies as a name-value mapping.
+    """
+    cookies: MutableMapping[bytes, List[bytes]] = dict()
+    for k, v in decode_cookies(value).items():
+        cookies.setdefault(k, []).extend(v)
+    return cookies
+
+
+_PARSERS[b'cookie'] = _Parser(parse_cookie, _MergeType.EXTEND)
 
 
 def cookie(headers: List[Header]) -> Mapping[bytes, List[bytes]]:
@@ -141,10 +212,13 @@ def cookie(headers: List[Header]) -> Mapping[bytes, List[bytes]]:
     :return: The cookies as a name-value mapping.
     """
     cookies: MutableMapping[bytes, List[bytes]] = dict()
-    for header in find_all(b'cookie', headers):
-        for name, value in decode_cookies(header).items():
-            cookies.setdefault(name, []).extend(value)
+    for value in find_all(b'cookie', headers):
+        for k, v in parse_cookie(value).items():
+            cookies.setdefault(k, []).extend(v)
     return cookies
+
+
+_PARSERS[b'set-cookie'] = _Parser(decode_set_cookie, _MergeType.APPEND)
 
 
 def set_cookie(headers: List[Header]) -> Mapping[bytes, List[Mapping[str, Any]]]:
@@ -160,6 +234,18 @@ def set_cookie(headers: List[Header]) -> Mapping[bytes, List[Mapping[str, Any]]]
     return set_cookies
 
 
+def parse_vary(value: bytes) -> List[bytes]:
+    """Returns the vary header value as a list of headers.
+
+    :param value: The header value.
+    :return: A list of the vary headers.
+    """
+    return value.split(b', ') if value is not None else None
+
+
+_PARSERS[b'vary'] = _Parser(parse_vary, _MergeType.NONE)
+
+
 def vary(headers: List[Header]) -> Optional[List[bytes]]:
     """Returns the vary header value as a list of headers.
 
@@ -167,38 +253,40 @@ def vary(headers: List[Header]) -> Optional[List[bytes]]:
     :return: A list of the vary headers.
     """
     value = find(b'vary', headers)
-    return value.split(b', ') if value is not None else None
+    return None if value is None else parse_vary(value)
 
 
-def find_date(name: bytes, headers: List[Header]) -> Optional[datetime]:
-    """Find a header containing a date.
+def parse_date(value: bytes) -> datetime:
+    """parse as date.
 
-    :param name: The name of the header.
-    :param headers: The headers.
-    :return: The date if found, otherwise None.
+    :param value: The header value.
+    :return: The date.
     """
-    value = find(name, headers)
     return datetime.strptime(value.decode(), '%a, %d %b %Y %H:%M:%S %Z') if value else None
 
 
+_PARSERS[b'if-modified-since'] = _Parser(parse_date, _MergeType.NONE)
+
+
 def if_modified_since(headers: List[Header]) -> Optional[datetime]:
-    return find_date(b'if-modified-since', headers)
+    value = find(b'if-modified-since', headers)
+    return None if value is None else parse_date(value)
+
+
+_PARSERS[b'last-modified'] = _Parser(parse_date, _MergeType.NONE)
 
 
 def last_modified(headers: List[Header]) -> Optional[datetime]:
-    return find_date(b'if-modified-since', headers)
+    value = find(b'last-modified', headers)
+    return None if value is None else parse_date(value)
 
 
-def content_type(headers: List[Header]) -> Optional[Tuple[bytes, Optional[Mapping[bytes, float]]]]:
-    """Returns the content type is any otherwise None
+def parse_content_type(value: bytes) -> Tuple[bytes, Optional[Mapping[bytes, float]]]:
+    """Returns the content type
 
     :param headers: The headers
     :return: A tuple of the media type and a mapping of the parameters or None if absent.
     """
-    value = find(b'content-type', headers)
-    if value is None:
-        return None
-
     media_type, sep, rest = value.partition(b';')
     parameters = {
         first.strip(): rest.strip()
@@ -206,3 +294,36 @@ def content_type(headers: List[Header]) -> Optional[Tuple[bytes, Optional[Mappin
     } if sep == b';' else None
 
     return media_type, parameters
+
+
+_PARSERS[b'content-type'] = _Parser(parse_content_type, _MergeType.NONE)
+
+
+def content_type(headers: List[Header]) -> Optional[Tuple[bytes, Optional[Mapping[bytes, float]]]]:
+    """Returns the content type if any otherwise None
+
+    :param headers: The headers
+    :return: A tuple of the media type and a mapping of the parameters or None if absent.
+    """
+    value = find(b'content-type', headers)
+    return None if value is None else parse_content_type(value)
+
+
+_DEFAULT_PARSER = _Parser(lambda x: x, _MergeType.APPEND)
+
+
+def collect(headers: List[Header]) -> Mapping[bytes, Any]:
+    collection: MutableMapping[bytes, Any] = dict()
+    for name, value in headers:
+        parser = _PARSERS.get(name, _DEFAULT_PARSER)
+        if parser.merge_type == _MergeType.APPEND:
+            result = parser.parse(value)
+            collection.setdefault(name, []).append(result)
+        elif parser.merge_type == _MergeType.EXTEND:
+            result = parser.parse(value)
+            dct = collection.setdefault(name, dict())
+            for k, v in result.items():
+                dct.setdefault(k, []).extend(v)
+        else:
+            collection[name] = parser.parse(value)
+    return collection
