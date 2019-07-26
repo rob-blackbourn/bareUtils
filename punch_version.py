@@ -1,3 +1,3 @@
-major = 2
-minor = 4
+major = 3
+minor = 0
 patch = 0
