@@ -26,8 +26,8 @@ def parse_date(value: str) -> datetime:
 
 
 def format_date(value: datetime) -> str:
-    year, mon, mday, hour, min, sec, wday, yday, isdst = value.utctimetuple()
-    return f"{DAY_NAMES[wday]}, {mday:02d} {MONTH_NAMES[mon - 1]} {year:04d} {hour:02d}:{min:02d}:{sec:02d} GMT"
+    year, mon, mday, hours, mins, secs, wday, yday, isdst = value.utctimetuple()
+    return f"{DAY_NAMES[wday]}, {mday:02d} {MONTH_NAMES[mon - 1]} {year:04d} {hours:02d}:{mins:02d}:{secs:02d} GMT"
 
 
 def encode_set_cookie(

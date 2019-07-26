@@ -1,6 +1,7 @@
 from __future__ import annotations
 from abc import ABCMeta, abstractmethod
-from typing import AsyncIterator, Optional
+from baretypes import Content
+from typing import Optional
 import zlib
 from .streaming import bytes_writer, bytes_reader
 
@@ -43,9 +44,9 @@ def make_compress_compressobj() -> Compressor:
 
 
 async def compression_writer_adapter(
-        writer: AsyncIterator[bytes],
+        writer: Content,
         compressobj: Compressor
-) -> AsyncIterator[bytes]:
+) -> Content:
     """Adaptes a bytes generator to generated compressed output.
 
     :param writer: The writer to be adapted.
@@ -61,7 +62,7 @@ def compression_writer(
         buf: bytes,
         compressobj: Compressor,
         chunk_size: int = -1
-) -> AsyncIterator[bytes]:
+) -> Content:
     """Create an async generator for compressed content.
 
     :param buf: The bytes to compress
@@ -130,13 +131,13 @@ def make_compress_decompressobj() -> Decompressor:
 
 
 async def compression_reader_adapter(
-        reader: AsyncIterator[bytes],
+        reader: Content,
         decompressobj: Decompressor
-) -> AsyncIterator[bytes]:
+) -> Content:
     async for item in reader:
         yield decompressobj.decompress(item)
     yield decompressobj.flush()
 
 
-async def compression_reader(source: AsyncIterator[bytes], decompressobj: Decompressor) -> bytes:
+async def compression_reader(source: Content, decompressobj: Decompressor) -> bytes:
     return await bytes_reader(compression_reader_adapter(source, decompressobj))

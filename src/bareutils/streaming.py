@@ -1,6 +1,5 @@
 from __future__ import annotations
 import codecs
-from typing import AsyncIterator
 from baretypes import Content
 
 
@@ -31,7 +30,7 @@ async def text_reader(content: Content, encoding: str = 'utf-8') -> str:
     return text
 
 
-async def bytes_writer(buf: bytes, chunk_size: int = -1) -> AsyncIterator[bytes]:
+async def bytes_writer(buf: bytes, chunk_size: int = -1) -> Content:
     """Creates an asynchronous generator from the supplied response body.
 
     :param buf: The response body to return.
@@ -48,7 +47,7 @@ async def bytes_writer(buf: bytes, chunk_size: int = -1) -> AsyncIterator[bytes]
             start, end = end, end + chunk_size
 
 
-async def text_writer(text: str, encoding: str = 'utf-8', chunk_size: int = -1) -> AsyncIterator[bytes]:
+async def text_writer(text: str, encoding: str = 'utf-8', chunk_size: int = -1) -> Content:
     """Creates an asynchronous generator from the supplied response body.
 
     :param text: The response body.
