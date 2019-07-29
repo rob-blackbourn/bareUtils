@@ -1,9 +1,13 @@
+"""
+Compression streaming.
+"""
+
 from __future__ import annotations
 from abc import ABCMeta, abstractmethod
 from baretypes import Content
 from typing import Optional
 import zlib
-from .streaming import bytes_writer, bytes_reader
+from ..streaming import bytes_writer, bytes_reader
 
 
 class Compressor(metaclass=ABCMeta):

@@ -12,7 +12,9 @@ from .compression import (
     compression_writer,
     make_compress_decompressobj,
     make_deflate_decompressobj,
-    make_gzip_decompressobj
+    make_gzip_decompressobj,
+    CompressionMiddleware,
+    make_default_compression_middleware
 )
 
 from .responses import (
@@ -42,6 +44,8 @@ __all__ = [
     'make_compress_decompressobj',
     'make_deflate_decompressobj',
     'make_gzip_decompressobj',
+    'CompressionMiddleware',
+    'make_default_compression_middleware',
 
     "bytes_response",
     "text_response",
