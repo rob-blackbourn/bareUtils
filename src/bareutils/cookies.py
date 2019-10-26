@@ -1,18 +1,40 @@
+"""Cookies"""
+
 from datetime import datetime, timedelta, timezone
 import re
-from typing import Optional, Union, Mapping, MutableMapping, Any, List
+from typing import (
+    Optional,
+    Union,
+    Mapping,
+    MutableMapping,
+    Any,
+    List
+)
+
+from baretypes import ParseError
 
 # Date: <day-name>, <day> <month> <year> <hour>:<minute>:<second> GMT
 DATE_PATTERN = re.compile(
     r'^(Mon|Tue|Wed|Thu|Fri|Sat|Sun), (\d{2}) (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) (\d{4}) (\d{2}):(\d{2}):(\d{2}) GMT$'
 )
 DAY_NAMES = ("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
-MONTH_NAMES = ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+MONTH_NAMES = ("Jan", "Feb", "Mar", "Apr", "May", "Jun",
+               "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
 
 
 def parse_date(value: str) -> datetime:
+    """Parse a date
+
+    :param value: The string to parse
+    :type value: str
+    :raises ParseError: Raised if the date could not be parsed
+    :return: The parsed datetime
+    :rtype: datetime
+    """
     matches = DATE_PATTERN.match(value)
-    day_of_week, day, month, year, hour, minute, second = matches.groups()
+    if matches is None:
+        raise ParseError("Failed to parse date")
+    _day_of_week, day, month, year, hour, minute, second = matches.groups()
     result = datetime(
         int(year),
         1 + MONTH_NAMES.index(month),
@@ -43,7 +65,8 @@ def encode_set_cookie(
         same_site: Optional[bool] = None
 ) -> bytes:
     if name.startswith(b'__Secure-') or name.startswith(b'__Host-') and not secure:
-        raise RuntimeError('Keys starting __Secure- or __Host- require the secure directive')
+        raise RuntimeError(
+            'Keys starting __Secure- or __Host- require the secure directive')
 
     set_cookie = name + b'=' + value
 
@@ -52,7 +75,8 @@ def encode_set_cookie(
 
     if max_age is not None:
         if isinstance(max_age, timedelta):
-            set_cookie += b'; Max-Age=' + str(int(max_age.total_seconds())).encode()
+            set_cookie += b'; Max-Age=' + \
+                str(int(max_age.total_seconds())).encode()
         else:
             set_cookie += b'; Max-Age=' + str(int(max_age)).encode()
 

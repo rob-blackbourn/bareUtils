@@ -1,3 +1,5 @@
+"""Exports for compression"""
+
 from .streaming import (
     Compressor,
     make_gzip_compressobj,

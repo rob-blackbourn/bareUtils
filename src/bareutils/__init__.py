@@ -1,8 +1,11 @@
+"""Exports from bareUtils"""
+
 from .streaming import (
     text_reader,
     text_writer,
     bytes_reader,
-    bytes_writer)
+    bytes_writer
+)
 
 from .compression import (
     make_gzip_compressobj,

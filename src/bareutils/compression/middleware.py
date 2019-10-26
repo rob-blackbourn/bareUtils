@@ -1,4 +1,7 @@
+"""Middleware for compression"""
+
 from typing import Mapping, List, Optional, Callable
+
 from baretypes import (
     Scope,
     Info,
@@ -8,6 +11,7 @@ from baretypes import (
     HttpResponse
 )
 import bareutils.header as header
+
 from .streaming import (
     Compressor,
     compression_writer_adapter,
@@ -17,15 +21,20 @@ from .streaming import (
 
 
 class CompressionMiddleware:
+    """Compression middleware"""
 
-    def __init__(self, compressors: Mapping[bytes, Callable[[], Compressor]], minimum_size: int = 512) -> None:
+    def __init__(
+            self,
+            compressors: Mapping[bytes, Callable[[], Compressor]],
+            minimum_size: int = 512
+    ) -> None:
         """Constructs the compression middleware.
 
         :param compressors: A dictionary of encoding to compressor factories.
         :param minimum_size: The size below which no compression will be attempted.
 
-        Note how the compression functions are passed rather than the compressors, as a fresh compressor
-        is required for each message.
+        Note how the compression functions are passed rather than the compressors,
+        as a fresh compressor is required for each message.
 
         .. code-block:: python
 
@@ -38,21 +47,29 @@ class CompressionMiddleware:
         self.compressors = compressors
         self.minimum_size = minimum_size
 
-    def is_acceptable(self, accept_encoding: Mapping[bytes, float], content_encoding: List[bytes]) -> bool:
+    def is_acceptable(
+            self,
+            accept_encoding: Mapping[bytes, float],
+            content_encoding: List[bytes]
+    ) -> bool:
         """Returns True if the requested encoding is acceptable.
 
         :param accept_encoding: The acceptable encodings.
         :param content_encoding: The current content encoding.
         :return: True if acceptable, otherwise False.
 
-        If the quality value of 'identity' is specified as 0 we must support one of the other encodings.
+        If the quality value of 'identity' is specified as 0 we must support
+        one of the other encodings.
 
-        We must check the current encoding as it is possible that the this is already sufficient.
+        We must check the current encoding as it is possible that the this is
+        already sufficient.
         """
         # Must the response be encoded?
         if accept_encoding[b'identity'] == 0.0:
-            acceptable = {encoding for encoding, quality in accept_encoding.items() if quality != 0}
-            current_encodings = {encoding for encoding in content_encoding if encoding != b'identity'}
+            acceptable = {encoding for encoding,
+                          quality in accept_encoding.items() if quality != 0}
+            current_encodings = {
+                encoding for encoding in content_encoding if encoding != b'identity'}
             available = set(self.compressors.keys()) | current_encodings
             if len(acceptable & available) == 0:
                 # No acceptable encodings are available.
@@ -74,7 +91,7 @@ class CompressionMiddleware:
         :return: True if compression is desirable, otherwise False.
 
         While compression might be possible it may not be desirable. For example the
-        content may already be compresssed (e.g. for an image), or the content length
+        content may already be compressed (e.g. for an image), or the content length
         may be too small to be worth the effort.
         """
         if content_length is not None and content_length < self.minimum_size:
@@ -103,6 +120,13 @@ class CompressionMiddleware:
         return True
 
     def select_encoding(self, accept_encoding: Mapping[bytes, float]) -> bytes:
+        """Select the encoding based on the accepted encodings
+
+        :param accept_encoding: The accepted encodings
+        :type accept_encoding: Mapping[bytes, float]
+        :return: The selected encoding
+        :rtype: bytes
+        """
         acceptable = sorted([
             (encoding, quality)
             for encoding, quality in accept_encoding.items()
@@ -133,7 +157,8 @@ class CompressionMiddleware:
         if status < 200 or status >= 300:
             return status, headers, body, pushes
 
-        accept_encoding = header.accept_encoding(scope['headers'], add_identity=True) or {b'identity': 1}
+        accept_encoding = header.accept_encoding(
+            scope['headers'], add_identity=True) or {b'identity': 1}
         content_encoding = header.content_encoding(headers) or [b'identity']
 
         if not self.is_acceptable(accept_encoding, content_encoding):
@@ -148,12 +173,15 @@ class CompressionMiddleware:
         encoding = self.select_encoding(accept_encoding)
 
         # Copy the headers skipping the content-length, content-encoding, and vary.
-        headers = [(k, v) for k, v in headers if k not in (b'content-length', b'content-encoding', b'vary')]
+        headers = [(k, v) for k, v in headers if k not in (
+            b'content-length', b'content-encoding', b'vary')]
 
-        # Add the content-encoding. We don't know the length, so the content length is omitted and chunking is used.
+        # Add the content-encoding. We don't know the length, so the content
+        # length is omitted and chunking is used.
         headers.append((b'content-encoding', encoding))
 
-        # Add accept-encoding to the vary header to indicate this is the same document regardless of the encoding.
+        # Add accept-encoding to the vary header to indicate this is the same
+        # document regardless of the encoding.
         if b'accept-encoding' not in vary:
             vary.append(b'accept-encoding')
         headers.append((b'vary', b', '.join(vary)))
@@ -161,7 +189,7 @@ class CompressionMiddleware:
         # Get the compressor class.
         compressor_cls = self.compressors[encoding]
 
-        # Return the response with the body wrappped in the compressor adapter.
+        # Return the response with the body wrapped in the compressor adapter.
         return status, headers, compression_writer_adapter(body, compressor_cls()), pushes
 
 

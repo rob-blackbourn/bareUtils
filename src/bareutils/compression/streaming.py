@@ -4,9 +4,11 @@ Compression streaming.
 
 from __future__ import annotations
 from abc import ABCMeta, abstractmethod
-from baretypes import Content
 from typing import Optional
 import zlib
+
+from baretypes import Content
+
 from ..streaming import bytes_writer, bytes_reader
 
 
@@ -15,10 +17,20 @@ class Compressor(metaclass=ABCMeta):
 
     @abstractmethod
     def compress(self, buf: bytes) -> bytes:
-        ...
+        """Compress a buffer
+
+        :param buf: The buffer to compress
+        :type buf: bytes
+        :return: The compressed buffer
+        :rtype: bytes
+        """
 
     def flush(self) -> bytes:
-        ...
+        """Flush the compressor
+
+        :return: The remaining bytes
+        :rtype: bytes
+        """
 
 
 def make_gzip_compressobj() -> Compressor:
@@ -51,7 +63,7 @@ async def compression_writer_adapter(
         writer: Content,
         compressobj: Compressor
 ) -> Content:
-    """Adaptes a bytes generator to generated compressed output.
+    """Adapts a bytes generator to generated compressed output.
 
     :param writer: The writer to be adapted.
     :param compressobj: A compressor
