@@ -5,7 +5,11 @@
     "python.linting.pylintEnabled": true,
     "python.linting.mypyEnabled": true,
     "cSpell.words": [
-        "WBITS",
-        "bareasgi"
+      "WBITS",
+      "bareasgi",
+      "isdst",
+      "mday",
+      "wday",
+      "yday"
     ]
 }
