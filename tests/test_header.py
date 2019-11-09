@@ -288,6 +288,7 @@ def test_collect():
         (b'accept-encoding', b'deflate, gzip;q=1.0, *;q=0.5'),
         (b'accept-charset', b'utf-8, iso-8859-1;q=0.5'),
         (b'accept-language', b'fr-CH, fr;q=0.9, en;q=0.8, de;q=0.7, *;q=0.5'),
+        (b'accept', b'text/html, application/xhtml+xml, application/xml;q=0.9, */*;q=0.8'),
     ]
     result = header.collect(headers)
     assert result == {
@@ -348,5 +349,11 @@ def test_collect():
             b'en': 0.8,
             b'de': 0.7,
             b'*': 0.5,
+        },
+        b'accept': {
+            b'text/html': 1.0,
+            b'application/xhtml+xml': 1.0,
+            b'application/xml': 0.9,
+            b'*/*': 0.8
         }
     }
