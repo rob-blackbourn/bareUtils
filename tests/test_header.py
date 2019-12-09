@@ -315,13 +315,67 @@ def test_content_disposition():
 
 def test_content_range():
     """Test content_range"""
-    assert header.content_range(
-        [(b'content-range', b'bytes 200-1000/67589')]) == (b'bytes', (200, 1000), 67589)
-    assert header.content_range(
-        [(b'content-range', b'bytes 200-1000/*')]) == (b'bytes', (200, 1000), None)
-    assert header.content_range(
-        [(b'content-range', b'bytes */67589')]) == (b'bytes', None, 67589)
+    assert header.content_range([
+        (b'content-range', b'bytes 200-1000/67589')
+    ]) == (b'bytes', (200, 1000), 67589)
+    assert header.content_range([
+        (b'content-range', b'bytes 200-1000/*')
+    ]) == (b'bytes', (200, 1000), None)
+    assert header.content_range([
+        (b'content-range', b'bytes */67589')
+    ]) == (b'bytes', None, 67589)
 
+
+def test_date():
+    """Test date"""
+    assert header.date([
+        (b'date', b'Wed, 21 Oct 2015 07:28:00 GMT')
+    ]) == datetime(2015, 10, 21, 7, 28)
+
+def test_expect():
+    """Test expect"""
+    assert header.expect([
+        (b'expect', b'100-continue')
+    ]) == b'100-continue'
+
+def test_expires():
+    """Test expires"""
+    assert header.expires([
+        (b'expires', b'Wed, 21 Oct 2015 07:28:00 GMT')
+    ]) == datetime(2015, 10, 21, 7, 28)
+
+def test_host():
+    """Test host"""
+    assert header.host([
+        (b'host', b'developer.cdn.mozilla.net')
+    ]) == (b'developer.cdn.mozilla.net', None)
+    assert header.host([
+        (b'host', b'localhost:8080')
+    ]) == (b'localhost', 8080)
+
+def test_location():
+    """Test location"""
+    assert header.location([
+        (b'location', b'/index.html')
+    ]) == b'/index.html'
+
+def test_origin():
+    """Test origin"""
+    assert header.origin([
+        (b'origin', b'https://developer.mozilla.org')
+    ]) == b'https://developer.mozilla.org'
+
+def test_referer():
+    """Test referer"""
+    assert header.referer([
+        (b'referer', b'https://developer.mozilla.org/en-US/docs/Web/JavaScript')
+    ]) == b'https://developer.mozilla.org/en-US/docs/Web/JavaScript'
+
+def test_server():
+    """Test server"""
+    assert header.server([
+        (b'server', b'Apache/2.4.1 (Unix)')
+    ]) == b'Apache/2.4.1 (Unix)'
 
 def test_vary():
     """Test vary"""
@@ -343,10 +397,22 @@ def test_collect():
     headers = [
         (b'content-type', b'application/json'),
         (b'content-length', b'256'),
-        (b'set-cookie', b'foo=abcde; Expires=Fri, 30 Aug 2019 00:00:00 GMT; Domain=example.com; Path=/'),
-        (b'set-cookie', b'foo=fghij; Expires=Fri, 30 Aug 2019 00:00:00 GMT; Domain=example.com; Path=/foo'),
-        (b'set-cookie', b'foo=klmno; Expires=Fri, 30 Aug 2019 00:00:00 GMT; Domain=other.com; Path=/'),
-        (b'set-cookie', b'bar=12345; Expires=Fri, 30 Aug 2019 00:00:00 GMT; Domain=other.com; Path=/'),
+        (
+            b'set-cookie',
+            b'foo=abcde; Expires=Fri, 30 Aug 2019 00:00:00 GMT; Domain=example.com; Path=/'
+        ),
+        (
+            b'set-cookie',
+            b'foo=fghij; Expires=Fri, 30 Aug 2019 00:00:00 GMT; Domain=example.com; Path=/foo'
+        ),
+        (
+            b'set-cookie',
+            b'foo=klmno; Expires=Fri, 30 Aug 2019 00:00:00 GMT; Domain=other.com; Path=/'
+        ),
+        (
+            b'set-cookie',
+            b'bar=12345; Expires=Fri, 30 Aug 2019 00:00:00 GMT; Domain=other.com; Path=/'
+        ),
         (b'if-modified-since', b'Wed, 21 Oct 2015 07:28:00 GMT'),
         (b'last-modified', b'Wed, 21 Oct 2015 07:28:00 GMT'),
         (b'vary', b'accept-encoding, user-agent'),
@@ -358,7 +424,15 @@ def test_collect():
         (b'accept-charset', b'utf-8, iso-8859-1;q=0.5'),
         (b'accept-language', b'fr-CH, fr;q=0.9, en;q=0.8, de;q=0.7, *;q=0.5'),
         (b'accept', b'text/html, application/xhtml+xml, application/xml;q=0.9, */*;q=0.8'),
-        (b'authorization', b'Basic YWxhZGRpbjpvcGVuc2VzYW1l')
+        (b'authorization', b'Basic YWxhZGRpbjpvcGVuc2VzYW1l'),
+        (b'host', b'developer.cdn.mozilla.net'),
+        (b'expect', b'100-continue'),
+        (b'date', b'Wed, 21 Oct 2015 07:28:00 GMT'),
+        (b'expires', b'Wed, 21 Oct 2015 07:28:00 GMT'),
+        (b'location', b'/index.html'),
+        (b'origin', b'https://developer.mozilla.org'),
+        (b'referer', b'https://developer.mozilla.org/en-US/docs/Web/JavaScript'),
+        (b'server', b'Apache/2.4.1 (Unix)')
     ]
     result = header.collect(headers)
     assert result == {
@@ -426,5 +500,13 @@ def test_collect():
             b'application/xml': 0.9,
             b'*/*': 0.8
         },
-        b'authorization': (b'Basic', b'YWxhZGRpbjpvcGVuc2VzYW1l')
+        b'authorization': (b'Basic', b'YWxhZGRpbjpvcGVuc2VzYW1l'),
+        b'host': (b'developer.cdn.mozilla.net', None),
+        b'expect': b'100-continue',
+        b'date': datetime(2015, 10, 21, 7, 28),
+        b'expires': datetime(2015, 10, 21, 7, 28),
+        b'location': b'/index.html',
+        b'origin': b'https://developer.mozilla.org',
+        b'referer': b'https://developer.mozilla.org/en-US/docs/Web/JavaScript',
+        b'server': b'Apache/2.4.1 (Unix)'
     }

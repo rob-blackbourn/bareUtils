@@ -565,7 +565,6 @@ def allow(headers: Headers) -> Optional[List[bytes]]:
     value = find(b'allow', headers)
     return None if value is None else _parse_comma_separated_list(value)
 
-
 def _parse_authorization(value: bytes) -> Tuple[bytes, bytes]:
     auth_type, _, credentials = value.partition(b' ')
     return auth_type.strip(), credentials
@@ -864,10 +863,103 @@ def cookie(headers: Headers) -> Mapping[bytes, List[bytes]]:
             cookies.setdefault(name, []).extend(content)
     return cookies
 
+# Date
+
+_PARSERS[b'date'] = _Parser(_parse_date, _MergeType.NONE)
+
+def date(
+        headers: Headers,
+        *,
+        default: Optional[datetime] = None
+) -> Optional[datetime]:
+    """The Date general HTTP header contains the date and time at which the
+    message was originated.
+
+    :param headers: The headers
+    :type headers: Headers
+    :param default: An optional default, defaults to None
+    :type default: Optional[datetime], optional
+    :return: The date and time at which the message was originated
+    :rtype: Optional[datetime]
+    """
+    value = find(b'date', headers)
+    return default if value is None else _parse_date(value)
+
+# Expect
+
+_PARSERS[b'expect'] = _Parser(_pass_through, _MergeType.NONE)
+
+def expect(
+        headers: Headers,
+        *,
+        default: Optional[bytes] = None
+) -> Optional[bytes]:
+    """Returns the expect header
+    
+    :param headers: The headers
+    :type headers: Headers
+    :param default: An optional default value, defaults to None
+    :type default: Optional[bytes], optional
+    :return: The expect directive
+    :rtype: Optional[bytes]
+    """
+    value = find(b'expect', headers)
+    return default if value is None else value
+
+# Expires
+
+_PARSERS[b'expires'] = _Parser(_parse_date, _MergeType.NONE)
+
+def expires(
+        headers: Headers,
+        *,
+        default: Optional[datetime] = None
+) -> Optional[datetime]:
+    """The Expires header contains the date/time after which the response is
+    considered stale.
+
+    :param headers: The headers
+    :type headers: Headers
+    :param default: An optional default, defaults to None
+    :type default: Optional[datetime], optional
+    :return: The date/time after which the response is considered stale
+    :rtype: Optional[datetime]
+    """
+    value = find(b'expires', headers)
+    return default if value is None else _parse_date(value)
+
+# From
+
+_PARSERS[b'from'] = _Parser(_pass_through, _MergeType.NONE)
+
+# Host
+
+def _parse_host(value: bytes) -> Tuple[bytes, Optional[int]]:
+    host_, sep, port = value.partition(b':')
+    return (host_, None) if not sep else (host_, int(port))
+
+_PARSERS[b'host'] = _Parser(_parse_host, _MergeType.NONE)
+
+def host(
+        headers: Headers,
+        *,
+        default: Optional[Tuple[bytes, Optional[int]]] = None
+) ->  Optional[Tuple[bytes, Optional[int]]]:
+    """Returns the host header as a name, port tuple
+    
+    :param headers: The headers
+    :type headers: Headers
+    :param default: Optional default, defaults to None
+    :type default: Optional[Tuple[bytes, Optional[int]]], optional
+    :return: The host as a name, port tuple.
+    :rtype: Optional[Tuple[bytes, Optional[int]]]
+    """
+    value = find(b'host', headers)
+    return default if value is None else _parse_host(value)
+
 # If-Modified-Since
 
 _PARSERS[b'if-modified-since'] = _Parser(_parse_date, _MergeType.NONE)
-
 
 def if_modified_since(headers: Headers) -> Optional[datetime]:
     """The If-Modified-Since request HTTP header makes the request conditional:
@@ -907,6 +999,99 @@ def last_modified(headers: Headers) -> Optional[datetime]:
     value = find(b'last-modified', headers)
     return None if value is None else _parse_date(value)
 
+
+# Location
+
+_PARSERS[b'location'] = _Parser(_pass_through, _MergeType.NONE)
+
+def location(
+        headers: Headers,
+        *,
+        default: Optional[bytes] = None
+) -> Optional[bytes]:
+    """The Location response header indicates the URL to redirect a page to. It
+    only provides a meaning when served with a 3xx (redirection) or 201
+    (created) status response.
+
+    :param headers: The headers
+    :type headers: Headers
+    :param default: An optional default, defaults to None
+    :type default: Optional[bytes], optional
+    :return: The redirect location
+    :rtype: Optional[datetime]
+    """
+    value = find(b'location', headers)
+    return default if value is None else value
+
+# Origin
+
+_PARSERS[b'origin'] = _Parser(_pass_through, _MergeType.NONE)
+
+def origin(
+        headers: Headers,
+        *,
+        default: Optional[bytes] = None
+) -> Optional[bytes]:
+    """The Origin request header indicates where a fetch originates from. It
+    doesn't include any path information, but only the server name. It is sent
+    with CORS requests, as well as with POST requests. It is similar to the
+    Referer header, but, unlike this header, it doesn't disclose the whole path.
+
+    :param headers: The headers
+    :type headers: Headers
+    :param default: An optional default, defaults to None
+    :type default: Optional[bytes], optional
+    :return: The origins
+    :rtype: Optional[datetime]
+    """
+    value = find(b'origin', headers)
+    return default if value is None else value
+
+# Referer
+
+_PARSERS[b'referer'] = _Parser(_pass_through, _MergeType.NONE)
+
+def referer(
+        headers: Headers,
+        *,
+        default: Optional[bytes] = None
+) -> Optional[bytes]:
+    """The Referer request header contains the address of the previous web page
+    from which a link to the currently requested page was followed. The Referer
+    header allows servers to identify where people are visiting them from and
+    may use that data for analytics, logging, or optimized caching, for example.
+
+    :param headers: The headers
+    :type headers: Headers
+    :param default: An optional default, defaults to None
+    :type default: Optional[bytes], optional
+    :return: The referer
+    :rtype: Optional[datetime]
+    """
+    value = find(b'referer', headers)
+    return default if value is None else value
+
+# Server
+
+_PARSERS[b'server'] = _Parser(_pass_through, _MergeType.NONE)
+
+def server(
+        headers: Headers,
+        *,
+        default: Optional[bytes] = None
+) -> Optional[bytes]:
+    """The Server header contains information about the software used by the
+    origin server to handle the request.
+
+    :param headers: The headers
+    :type headers: Headers
+    :param default: An optional default, defaults to None
+    :type default: Optional[bytes], optional
+    :return: The product directive
+    :rtype: Optional[datetime]
+    """
+    value = find(b'server', headers)
+    return default if value is None else value
 
 # Set-Cookie
 
