@@ -279,7 +279,8 @@ def _parse_access_control_allow_credentials(value: bytes) -> bool:
     return value.lower() == b'true'
 
 
-_PARSERS[b'access-control-allow-credentials'] = _Parser(_parse_access_control_allow_credentials, _MergeType.NONE)
+_PARSERS[b'access-control-allow-credentials'] = _Parser(
+    _parse_access_control_allow_credentials, _MergeType.NONE)
 
 
 def access_control_allow_credentials(headers: Headers) -> Optional[bool]:
@@ -292,7 +293,8 @@ def access_control_allow_credentials(headers: Headers) -> Optional[bool]:
     return None if value is None else _parse_access_control_allow_credentials(value)
 
 
-_PARSERS[b'access-control-allow-headers'] = _Parser(_parse_comma_separated_list, _MergeType.NONE)
+_PARSERS[b'access-control-allow-headers'] = _Parser(
+    _parse_comma_separated_list, _MergeType.NONE)
 
 
 def access_control_allow_headers(headers: Headers) -> Optional[List[bytes]]:
@@ -300,7 +302,8 @@ def access_control_allow_headers(headers: Headers) -> Optional[List[bytes]]:
     return None if value is None else _parse_comma_separated_list(value)
 
 
-_PARSERS[b'access-control-allow-methods'] = _Parser(_parse_comma_separated_list, _MergeType.NONE)
+_PARSERS[b'access-control-allow-methods'] = _Parser(
+    _parse_comma_separated_list, _MergeType.NONE)
 
 
 def access_control_allow_methods(headers: Headers) -> Optional[List[bytes]]:
@@ -308,7 +311,8 @@ def access_control_allow_methods(headers: Headers) -> Optional[List[bytes]]:
     return None if value is None else _parse_comma_separated_list(value)
 
 
-_PARSERS[b'access-control-allow-origin'] = _Parser(_pass_through, _MergeType.NONE)
+_PARSERS[b'access-control-allow-origin'] = _Parser(
+    _pass_through, _MergeType.NONE)
 
 
 def access_control_allow_origin(headers: Headers) -> Optional[bytes]:
@@ -329,7 +333,8 @@ def _parse_access_control_expose_headers(value: bytes, *, add_simple_response_he
     return headers
 
 
-_PARSERS[b'access-control-expose-headers'] = _Parser(_parse_access_control_expose_headers, _MergeType.NONE)
+_PARSERS[b'access-control-expose-headers'] = _Parser(
+    _parse_access_control_expose_headers, _MergeType.NONE)
 
 
 def access_control_expose_headers(
@@ -352,7 +357,8 @@ def access_control_max_age(headers: Headers) -> Optional[int]:
     return None if value is None else _parse_int(value)
 
 
-_PARSERS[b'access-control-request-headers'] = _Parser(_parse_comma_separated_list, _MergeType.NONE)
+_PARSERS[b'access-control-request-headers'] = _Parser(
+    _parse_comma_separated_list, _MergeType.NONE)
 
 
 def access_control_request_headers(headers: Headers) -> Optional[List[bytes]]:
@@ -360,7 +366,8 @@ def access_control_request_headers(headers: Headers) -> Optional[List[bytes]]:
     return None if value is None else _parse_comma_separated_list(value)
 
 
-_PARSERS[b'access-control-request-method'] = _Parser(_pass_through, _MergeType.NONE)
+_PARSERS[b'access-control-request-method'] = _Parser(
+    _pass_through, _MergeType.NONE)
 
 
 def access_control_request_method(headers: Headers) -> Optional[bytes]:
@@ -404,7 +411,8 @@ def cache_control(headers: Headers) -> Optional[Mapping[bytes, Optional[int]]]:
     return None if value is None else _parse_cache_control(value)
 
 
-_PARSERS[b'clear-site-data'] = _Parser(_parse_comma_separated_list, _MergeType.NONE)
+_PARSERS[b'clear-site-data'] = _Parser(
+    _parse_comma_separated_list, _MergeType.NONE)
 
 
 def clear_site_data(headers: Headers) -> Optional[List[bytes]]:
@@ -434,7 +442,8 @@ def _parse_content_encoding(value: bytes, *, add_identity: bool = False) -> List
     return encodings
 
 
-_PARSERS[b'content-encoding'] = _Parser(_parse_content_encoding, _MergeType.NONE)
+_PARSERS[b'content-encoding'] = _Parser(
+    _parse_content_encoding, _MergeType.NONE)
 
 
 def content_encoding(headers: Headers, *, add_identity: bool = False) -> Optional[List[bytes]]:
@@ -594,7 +603,8 @@ def _parse_content_disposition(value: bytes) -> Tuple[bytes, Optional[Mapping[by
     return media_type, parameters
 
 
-_PARSERS[b'content-disposition'] = _Parser(_parse_content_disposition, _MergeType.NONE)
+_PARSERS[b'content-disposition'] = _Parser(
+    _parse_content_disposition, _MergeType.NONE)
 
 
 def content_disposition(headers: Headers) -> Optional[Tuple[bytes, Optional[Mapping[bytes, float]]]]:
@@ -607,7 +617,8 @@ def content_disposition(headers: Headers) -> Optional[Tuple[bytes, Optional[Mapp
     return None if value is None else _parse_content_disposition(value)
 
 
-_PARSERS[b'content-language'] = _Parser(_parse_comma_separated_list, _MergeType.NONE)
+_PARSERS[b'content-language'] = _Parser(
+    _parse_comma_separated_list, _MergeType.NONE)
 
 
 def content_language(headers: Headers) -> Optional[List[bytes]]:
@@ -641,6 +652,44 @@ def content_type(headers: Headers) -> Optional[Tuple[bytes, Optional[Mapping[byt
     """
     value = find(b'content-type', headers)
     return None if value is None else _parse_content_type(value)
+
+
+def _parse_accept(value: bytes, *, add_wildcard: bool = False) -> Mapping[bytes, float]:
+    values = {
+        first: parse_quality(rest) or 1.0
+        for first, sep, rest in [x.partition(b';') for x in value.split(b', ')]
+    }
+
+    if add_wildcard and b'*' not in values:
+        values[b'*'] = 1.0
+
+    return values
+
+
+_PARSERS[b'accept'] = _Parser(_parse_accept, _MergeType.NONE)
+
+
+def accept(
+        headers: Headers,
+        *,
+        add_wildcard: bool = False
+) -> Optional[Mapping[bytes, float]]:
+    """Returns the accept header it it exists.
+
+    Where quality is not given it defaults to 1.0.
+
+    >>> accept([(b'accept', b'text/html, application/xhtml+xml, application/xml;q=0.9, */*;q=0.8')])
+    {b'text/html': 1.0, b'application/xhtml+xml': 1.0, b'application/xml': 0.9, b'*/*': 0.8}
+
+    :param headers: The headers
+    :type headers: Headers
+    :param add_wildcard: If true add the implicit wildcard '*', defaults to False
+    :type add_wildcard: bool, optional
+    :return: A dictionary where the key is media type and the value is quality.
+    :rtype: Optional[Mapping[bytes, float]]
+    """
+    value = find(b'accept', headers)
+    return None if value is None else _parse_accept(value, add_wildcard=add_wildcard)
 
 
 def collect(headers: Headers) -> Mapping[bytes, Any]:

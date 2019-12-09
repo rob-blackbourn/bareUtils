@@ -83,7 +83,8 @@ def test_if_modified_since():
     headers = [
         (b'if-modified-since', b'Wed, 21 Oct 2015 07:28:00 GMT')
     ]
-    assert header.if_modified_since(headers) == datetime(2015, 10, 21, 7, 28, 0)
+    assert header.if_modified_since(
+        headers) == datetime(2015, 10, 21, 7, 28, 0)
 
 
 def test_last_modified():
@@ -106,18 +107,22 @@ def test_set_cookie():
 
 
 def test_content_type():
-    media_type, params = header.content_type([(b'content-type', b'application/json')])
+    media_type, params = header.content_type(
+        [(b'content-type', b'application/json')])
     assert media_type == b'application/json' and params is None
-    media_type, params = header.content_type([(b'content-type', b'text/html; charset=utf-8')])
+    media_type, params = header.content_type(
+        [(b'content-type', b'text/html; charset=utf-8')])
     assert media_type == b'text/html' and params is not None
     assert len(params) == 1 and params[b'charset'] == b'utf-8'
-    media_type, params = header.content_type([(b'content-type', b'multipart/form-data; boundary=something')])
+    media_type, params = header.content_type(
+        [(b'content-type', b'multipart/form-data; boundary=something')])
     assert media_type == b'multipart/form-data' and params is not None
     assert len(params) == 1 and params[b'boundary'] == b'something'
 
 
 def test_accept_charset():
-    assert header.accept_charset([(b'accept-charset', b'utf-8')]) == {b'utf-8': 1.0}
+    assert header.accept_charset(
+        [(b'accept-charset', b'utf-8')]) == {b'utf-8': 1.0}
     assert header.accept_charset([(b'accept-charset', b'utf-8, iso-8859-1;q=0.5')]) == {
         b'utf-8': 1.0,
         b'iso-8859-1': 0.5,
@@ -125,11 +130,16 @@ def test_accept_charset():
 
 
 def test_accept_encoding():
-    assert header.accept_encoding([(b'accept-encoding', b'gzip')]) == {b'gzip': 1.0}
-    assert header.accept_encoding([(b'accept-encoding', b'compress')]) == {b'compress': 1.0}
-    assert header.accept_encoding([(b'accept-encoding', b'deflate')]) == {b'deflate': 1.0}
-    assert header.accept_encoding([(b'accept-encoding', b'br')]) == {b'br': 1.0}
-    assert header.accept_encoding([(b'accept-encoding', b'identity')]) == {b'identity': 1.0}
+    assert header.accept_encoding(
+        [(b'accept-encoding', b'gzip')]) == {b'gzip': 1.0}
+    assert header.accept_encoding(
+        [(b'accept-encoding', b'compress')]) == {b'compress': 1.0}
+    assert header.accept_encoding(
+        [(b'accept-encoding', b'deflate')]) == {b'deflate': 1.0}
+    assert header.accept_encoding(
+        [(b'accept-encoding', b'br')]) == {b'br': 1.0}
+    assert header.accept_encoding(
+        [(b'accept-encoding', b'identity')]) == {b'identity': 1.0}
     assert header.accept_encoding([(b'accept-encoding', b'*')]) == {b'*': 1.0}
     assert header.accept_encoding([(b'accept-encoding', b'deflate, gzip;q=1.0, *;q=0.5')]) == {
         b'deflate': 1.0,
@@ -138,8 +148,27 @@ def test_accept_encoding():
     }
 
 
+def test_accept():
+    assert header.accept(
+        [
+            (b'accept', b'application/json')
+        ]
+    ) == {b'application/json': 1.0}
+    assert header.accept(
+        [
+            (b'accept', b'text/html, application/xhtml+xml, application/xml;q=0.9, */*;q=0.8')
+        ]
+    ) == {
+        b'text/html': 1.0,
+        b'application/xhtml+xml': 1.0,
+        b'application/xml': 0.9,
+        b'*/*': 0.8
+    }
+
+
 def test_accept_language():
-    assert header.accept_language([(b'accept-language', b'en-GB')]) == {b'en-GB': 1.0}
+    assert header.accept_language(
+        [(b'accept-language', b'en-GB')]) == {b'en-GB': 1.0}
     assert header.accept_language([(b'accept-language', b'fr-CH, fr;q=0.9, en;q=0.8, de;q=0.7, *;q=0.5')]) == {
         b'fr-CH': 1.0,
         b'fr': 0.9,
@@ -168,7 +197,8 @@ def test_accept_ranges():
 
 
 def test_access_control_allow_credentials():
-    assert header.access_control_allow_credentials([(b'access-control-allow-credentials', b'true')]) == True
+    assert header.access_control_allow_credentials(
+        [(b'access-control-allow-credentials', b'true')]) == True
 
 
 def test_access_control_allow_headers():
@@ -178,14 +208,16 @@ def test_access_control_allow_headers():
     assert header.access_control_allow_headers(
         [(b'access-control-allow-headers', b'X-Custom-Header, Upgrade-Insecure-Requests')]
     ) == [
-               b'X-Custom-Header',
-               b'Upgrade-Insecure-Requests'
-           ]
+        b'X-Custom-Header',
+        b'Upgrade-Insecure-Requests'
+    ]
 
 
 def test_access_control_allow_origin():
-    assert header.access_control_allow_origin([(b'access-control-allow-origin', b'null')]) == b'null'
-    assert header.access_control_allow_origin([(b'access-control-allow-origin', b'*')]) == b'*'
+    assert header.access_control_allow_origin(
+        [(b'access-control-allow-origin', b'null')]) == b'null'
+    assert header.access_control_allow_origin(
+        [(b'access-control-allow-origin', b'*')]) == b'*'
     assert header.access_control_allow_origin(
         [(b'access-control-allow-origin', b'https://developer.mozilla.org')]) == b'https://developer.mozilla.org'
 
@@ -221,18 +253,21 @@ def test_content_disposition():
     assert header.content_disposition(
         [(b'content-disposition', b'form-data; name="field2"; filename="example.txt"')]
     ) == (
-               b'form-data',
-               {
-                   b'name': b'field2',
-                   b'filename': b'example.txt'
-               }
-           )
+        b'form-data',
+        {
+            b'name': b'field2',
+            b'filename': b'example.txt'
+        }
+    )
 
 
 def test_content_range():
-    assert header.content_range([(b'content-range', b'bytes 200-1000/67589')]) == (b'bytes', (200, 1000), 67589)
-    assert header.content_range([(b'content-range', b'bytes 200-1000/*')]) == (b'bytes', (200, 1000), None)
-    assert header.content_range([(b'content-range', b'bytes */67589')]) == (b'bytes', None, 67589)
+    assert header.content_range(
+        [(b'content-range', b'bytes 200-1000/67589')]) == (b'bytes', (200, 1000), 67589)
+    assert header.content_range(
+        [(b'content-range', b'bytes 200-1000/*')]) == (b'bytes', (200, 1000), None)
+    assert header.content_range(
+        [(b'content-range', b'bytes */67589')]) == (b'bytes', None, 67589)
 
 
 def test_collect():
@@ -253,6 +288,7 @@ def test_collect():
         (b'accept-encoding', b'deflate, gzip;q=1.0, *;q=0.5'),
         (b'accept-charset', b'utf-8, iso-8859-1;q=0.5'),
         (b'accept-language', b'fr-CH, fr;q=0.9, en;q=0.8, de;q=0.7, *;q=0.5'),
+        (b'accept', b'text/html, application/xhtml+xml, application/xml;q=0.9, */*;q=0.8'),
     ]
     result = header.collect(headers)
     assert result == {
@@ -313,5 +349,11 @@ def test_collect():
             b'en': 0.8,
             b'de': 0.7,
             b'*': 0.5,
+        },
+        b'accept': {
+            b'text/html': 1.0,
+            b'application/xhtml+xml': 1.0,
+            b'application/xml': 0.9,
+            b'*/*': 0.8
         }
     }
