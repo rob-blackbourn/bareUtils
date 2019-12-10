@@ -57,6 +57,17 @@ def test_accept():
         b'*/*': 0.8
     }
 
+def test_accept_ch():
+    """Test accept_ch"""
+    assert header.accept_ch([
+        (b'accept-ch', b'DPR, Viewport-Width')
+    ]) == [b'DPR', b'Viewport-Width']
+
+def test_accept_ch_lifetime():
+    """Test for accept_ch_lifetime"""
+    assert header.accept_ch_lifetime([
+        (b'accept-ch-lifetime', b'86400')
+    ]) == 86400
 
 def test_accept_charset():
     """Test accept_charset"""
@@ -337,11 +348,35 @@ def test_content_security_policy():
         (b'connect-src', [b"'none'"])
     ]
 
+def test_cross_origin_resource_policy():
+    """Test cross_origin_resource_policy"""
+    assert header.cross_origin_resource_policy([
+        (b'cross-origin-resource-policy', b'same-site')
+    ]) == b'same-site'
+
 def test_date():
     """Test date"""
     assert header.date([
         (b'date', b'Wed, 21 Oct 2015 07:28:00 GMT')
     ]) == datetime(2015, 10, 21, 7, 28)
+
+def test_dnt():
+    """Test for dnt"""
+    assert header.dnt([
+        (b'DNT', b'1')
+    ]) == 1
+
+def test_dpr():
+    """Test dpr"""
+    assert header.dpr([
+        (b'DPR', b'1.0')
+    ]) == 1.0
+
+def test_device_memory():
+    """Test device_memory"""
+    assert header.device_memory([
+        (b'device-memory', b'0.5')
+    ]) == 0.5
 
 def test_expect():
     """Test expect"""
@@ -447,7 +482,14 @@ def test_collect():
         (
             b'content-security-policy',
             b"default-src 'self' http://example.com; connect-src 'none';"
-        )
+        ),
+        (b'cross-origin-resource-policy', b'same-site'),
+        (b'DNT', b'1'),
+        (b'DPR', b'1.0'),
+        (b'device-memory', b'0.5'),
+        (b'accept-ch', b'DPR, Viewport-Width'),
+        (b'accept-ch', b'Width'),
+        (b'accept-ch-lifetime', b'86400')
     ]
     result = header.collect(headers)
     assert result == {
@@ -527,5 +569,11 @@ def test_collect():
         b'content-security-policy': [
             (b'default-src', [b"'self'", b'http://example.com']),
             (b'connect-src', [b"'none'"])
-        ]
+        ],
+        b'cross-origin-resource-policy': b'same-site',
+        b'DNT': 1,
+        b'DPR': 1.0,
+        b'device-memory': 0.5,
+        b'accept-ch': [b'DPR', b'Viewport-Width', b'Width'],
+        b'accept-ch-lifetime': 86400
     }

@@ -108,6 +108,10 @@ def _parse_int(value: bytes) -> int:
     return int(value)
 
 
+def _parse_float(value: bytes) -> float:
+    return float(value)
+
+
 def _parse_date(value: bytes) -> datetime:
     """parse as date.
 
@@ -183,6 +187,51 @@ def accept(
     """
     value = find(b'accept', headers)
     return None if value is None else _parse_accept(value, add_wildcard=add_wildcard)
+
+# Accept-CH
+
+_PARSERS[b'accept-ch'] = _Parser(_parse_comma_separated_list, _MergeType.CONCAT)
+
+def accept_ch(
+        headers: Headers,
+        *,
+        default: Optional[List[bytes]] = None
+) -> Optional[List[bytes]]:
+    """The Accept-CH header is set by the server to specify which Client Hints
+    headers client should include in subsequent requests.
+
+    :param headers: The headers
+    :type headers: Headers
+    :param default: An optional default, defaults to None
+    :type default: Optional[List[bytes]]
+    :return: The client hints
+    :rtype: Optional[List[bytes]]
+    """
+    value = find(b'accept-ch', headers)
+    return default if value is None else _parse_comma_separated_list(value)
+
+# Accept-CH-Lifetime
+
+_PARSERS[b'accept-ch-lifetime'] = _Parser(_parse_int, _MergeType.NONE)
+
+def accept_ch_lifetime(
+        headers: Headers,
+        *,
+        default: Optional[int] = None
+) -> Optional[int]:
+    """The Accept-CH-Lifetime header is set by the server to specify the
+    persistence of Accept-CH header value that specifies for which Client Hints
+    headers client should include in subsequent requests.
+    
+    :param headers: The headers
+    :type headers: Headers
+    :param default: An optional default value, defaults to None
+    :type default: Optional[int], optional
+    :return: The lifetime in seconds
+    :rtype: Optional[int]
+    """
+    value = find(b'accept-ch-lifetime', headers)
+    return default if value is None else _parse_int(value)
 
 
 # Accept-Charset
@@ -836,6 +885,33 @@ def content_security_policy(
     value = find(b'content-security-policy', headers)
     return default if value is None else _parse_content_security_policy(value)
 
+# Content-Security-Policy-Report-Only
+
+_PARSERS[b'content-security-policy-report-only'] = _Parser(
+    _parse_content_security_policy,
+    _MergeType.CONCAT
+)
+
+def content_security_policy_report_only(
+        headers: Headers,
+        *,
+        default: Optional[List[Tuple[bytes, List[bytes]]]] = None
+) -> Optional[List[Tuple[bytes, List[bytes]]]]:
+    """The HTTP Content-Security-Policy-Report-Only response header allows web
+    developers to experiment with policies by monitoring (but not enforcing)
+    their effects. These violation reports consist of JSON documents sent via an
+    HTTP POST request to the specified URI.
+
+    :param headers: The headers
+    :type headers: Headers
+    :param default: An optional default value
+    :type default: Optional[List[Tuple[bytes, List[bytes]]]], default None
+    :return: The policy
+    :rtype: Optional[List[Tuple[bytes, List[bytes]]]]
+    """
+    value = find(b'content-security-policy-report-only', headers)
+    return default if value is None else _parse_content_security_policy(value)
+
 # Content-Type
 
 def _parse_content_type(
@@ -898,6 +974,33 @@ def cookie(headers: Headers) -> Mapping[bytes, List[bytes]]:
             cookies.setdefault(name, []).extend(content)
     return cookies
 
+# Cross-Origin-Resource-Policy
+
+_PARSERS[b'cross-origin-resource-policy'] = _Parser(
+    _pass_through,
+    _MergeType.NONE
+)
+
+def cross_origin_resource_policy(
+        headers: Headers,
+        *,
+        default: Optional[bytes] = None
+) -> Optional[bytes]:
+    """The HTTP Cross-Origin-Resource-Policy response header conveys a desire
+    that the browser blocks no-cors cross-origin/cross-site requests to the
+    given resource.
+
+    :param headers: The headers
+    :type headers: Headers
+    :param default: An optional default value
+    :type default: Optional[bytes]
+    :return: The policy
+    :rtype: Optional[bytes]
+    """
+    value = find(b'cross-origin-resource-policy', headers)
+    return default if value is None else value
+
+
 # Date
 
 _PARSERS[b'date'] = _Parser(_parse_date, _MergeType.NONE)
@@ -919,6 +1022,72 @@ def date(
     """
     value = find(b'date', headers)
     return default if value is None else _parse_date(value)
+
+# DNT
+
+_PARSERS[b'DNT'] = _Parser(_parse_int, _MergeType.NONE)
+
+def dnt(
+        headers: Headers,
+        *,
+        default: Optional[int] = None
+) -> Optional[int]:
+    """The DNT (Do Not Track) request header indicates the user's tracking
+    preference. It lets users indicate whether they would prefer privacy rather
+    than personalized content.
+    
+    :param headers: The headers
+    :type headers: Headers
+    :param default: An optional default value, defaults to None
+    :type default: Optional[int], optional
+    :return: 0 for allow tracking, 1 for deny tracking
+    :rtype: Optional[int]
+    """
+    value = find(b'DNT', headers)
+    return default if value is None else _parse_int(value)
+
+# DPR
+
+_PARSERS[b'DPR'] = _Parser(_parse_float, _MergeType.NONE)
+
+def dpr(headers: Headers, *, default: Optional[float] = None) -> Optional[float]:
+    """The DPR header is a Client Hints headers which represents the client
+    device pixel ratio (DPR), which is the the number of physical device pixels
+    corresponding to every CSS pixel.
+
+    :param headers: The headers
+    :type headers: Headers
+    :param default: An optional default, defaults to None
+    :type default: Optional[float], optional
+    :return: The device pixel ratio
+    :rtype: Optional[float]
+    """
+    value = find(b'DPR', headers)
+    return default if value is None else _parse_float(value)
+
+# Device-Memory
+
+_PARSERS[b'device-memory'] = _Parser(_parse_float, _MergeType.NONE)
+
+def device_memory(
+        headers: Headers,
+        *,
+        default: Optional[float] = None
+) -> Optional[float]:
+    """The Device-Memory header is a Device Memory API header that works like
+    Client Hints header which represents the approximate amount of RAM client
+    device has.
+    
+    :param headers: The headers
+    :type headers: Headers
+    :param default: An optional default value, defaults to None
+    :type default: Optional[float], optional
+    :return: The device memory
+    :rtype: Optional[float]
+    """
+    value = find(b'device-memory', headers)
+    return default if value is None else _parse_float(value)
+
 
 # Expect
 
