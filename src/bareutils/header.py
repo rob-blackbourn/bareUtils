@@ -12,7 +12,7 @@ class _MergeType(Enum):
     NONE = auto()
     EXTEND = auto()
     APPEND = auto()
-
+    CONCAT = auto()
 
 class _Parser(NamedTuple):
     parse: Callable[[bytes], Any]
@@ -801,6 +801,41 @@ def content_range(
     value = find(b'content-range', headers)
     return None if value is None else _parse_content_range(value)
 
+# Content-Security-Policy
+
+def _parse_content_security_policy(value: bytes) -> List[Tuple[bytes, List[bytes]]]:
+    return [
+        (directive.strip(), args.strip().split(b' '))
+        for directive, sep, args in [
+            policy_directive.strip().partition(b' ')
+            for policy_directive in value.strip().split(b';')
+        ]
+        if sep
+    ]
+
+_PARSERS[b'content-security-policy'] = _Parser(_parse_content_security_policy, _MergeType.CONCAT)
+
+def content_security_policy(
+        headers: Headers,
+        *,
+        default: Optional[List[Tuple[bytes, List[bytes]]]] = None
+) -> Optional[List[Tuple[bytes, List[bytes]]]]:
+    """The HTTP Content-Security-Policy response header allows web site
+    administrators to control resources the user agent is allowed to load for a
+    given page. With a few exceptions, policies mostly involve specifying server
+    origins and script endpoints. This helps guard against cross-site scripting
+    attacks (XSS).
+
+    :param headers: The headers
+    :type headers: Headers
+    :param default: An optional default value
+    :type default: Optional[List[Tuple[bytes, List[bytes]]]], default None
+    :return: The policy
+    :rtype: Optional[List[Tuple[bytes, List[bytes]]]]
+    """
+    value = find(b'content-security-policy', headers)
+    return default if value is None else _parse_content_security_policy(value)
+
 # Content-Type
 
 def _parse_content_type(
@@ -1148,6 +1183,9 @@ def collect(headers: Headers) -> Mapping[bytes, Any]:
         if parser.merge_type == _MergeType.APPEND:
             result = parser.parse(value)
             collection.setdefault(name, []).append(result)
+        elif parser.merge_type == _MergeType.CONCAT:
+            result = parser.parse(value)
+            collection.setdefault(name, []).extend(result)
         elif parser.merge_type == _MergeType.EXTEND:
             result = parser.parse(value)
             dct = collection.setdefault(name, dict())

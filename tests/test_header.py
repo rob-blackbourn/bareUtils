@@ -325,6 +325,17 @@ def test_content_range():
         (b'content-range', b'bytes */67589')
     ]) == (b'bytes', None, 67589)
 
+def test_content_security_policy():
+    """Test content_security_policy"""
+    assert header.content_security_policy([
+        (
+            b'content-security-policy',
+            b"default-src 'self' http://example.com; connect-src 'none';"
+        )
+    ]) == [
+        (b'default-src', [b"'self'", b'http://example.com']),
+        (b'connect-src', [b"'none'"])
+    ]
 
 def test_date():
     """Test date"""
@@ -432,7 +443,11 @@ def test_collect():
         (b'location', b'/index.html'),
         (b'origin', b'https://developer.mozilla.org'),
         (b'referer', b'https://developer.mozilla.org/en-US/docs/Web/JavaScript'),
-        (b'server', b'Apache/2.4.1 (Unix)')
+        (b'server', b'Apache/2.4.1 (Unix)'),
+        (
+            b'content-security-policy',
+            b"default-src 'self' http://example.com; connect-src 'none';"
+        )
     ]
     result = header.collect(headers)
     assert result == {
@@ -508,5 +523,9 @@ def test_collect():
         b'location': b'/index.html',
         b'origin': b'https://developer.mozilla.org',
         b'referer': b'https://developer.mozilla.org/en-US/docs/Web/JavaScript',
-        b'server': b'Apache/2.4.1 (Unix)'
+        b'server': b'Apache/2.4.1 (Unix)',
+        b'content-security-policy': [
+            (b'default-src', [b"'self'", b'http://example.com']),
+            (b'connect-src', [b"'none'"])
+        ]
     }
