@@ -169,7 +169,8 @@ _PARSERS[b'accept'] = _Parser(_parse_accept, _MergeType.NONE)
 def accept(
         headers: Headers,
         *,
-        add_wildcard: bool = False
+        add_wildcard: bool = False,
+        default: Optional[Mapping[bytes, float]] = None
 ) -> Optional[Mapping[bytes, float]]:
     """Returns the accept header it it exists.
 
@@ -182,11 +183,13 @@ def accept(
     :type headers: Headers
     :param add_wildcard: If true add the implicit wildcard '*', defaults to False
     :type add_wildcard: bool, optional
+    :param default: An optional default, defaults to None
+    :type default: Optional[Mapping[bytes, float]]
     :return: A dictionary where the key is media type and the value is quality.
     :rtype: Optional[Mapping[bytes, float]]
     """
     value = find(b'accept', headers)
-    return None if value is None else _parse_accept(value, add_wildcard=add_wildcard)
+    return default if value is None else _parse_accept(value, add_wildcard=add_wildcard)
 
 # Accept-CH
 
@@ -261,17 +264,20 @@ _PARSERS[b'accept-charset'] = _Parser(_parse_accept_charset, _MergeType.NONE)
 def accept_charset(
         headers: Headers,
         *,
-        add_wildcard: bool = False
+        add_wildcard: bool = False,
+        default: Optional[Mapping[bytes, float]] = None
 ) -> Optional[Mapping[bytes, float]]:
     """Extracts the accept encoding header if it exists into a mapping of the encoding
     and the quality value which defaults to 1.0 if missing.
 
     :param headers: The headers to search.
     :param add_wildcard: If True ensures the '*' charset is included.
+    :param default: An optional default value, defaults to None
+    :type default: Optional[Mapping[bytes, float]], optional
     :return: A mapping of the encodings and qualities.
     """
     value = find(b'accept-charset', headers)
-    return None if value is None else _parse_accept_charset(value, add_wildcard=add_wildcard)
+    return default if value is None else _parse_accept_charset(value, add_wildcard=add_wildcard)
 
 # Accept-Encoding
 
@@ -300,17 +306,19 @@ _PARSERS[b'accept-encoding'] = _Parser(_parse_accept_encoding, _MergeType.NONE)
 def accept_encoding(
         headers: Headers,
         *,
-        add_identity: bool = False
+        add_identity: bool = False,
+        default: Optional[Mapping[bytes, float]] = None
 ) -> Optional[Mapping[bytes, float]]:
     """Extracts the accept encoding header if it exists into a mapping of the encoding
     and the quality value which defaults to 1.0 if missing.
 
     :param headers: The headers to search.
     :param add_identity: If True ensures the 'identity' encoding is included.
+    :param default: An optional default value
     :return: A mapping of the encodings and qualities.
     """
     value = find(b'accept-encoding', headers)
-    return None if value is None else _parse_accept_encoding(value, add_identity=add_identity)
+    return default if value is None else _parse_accept_encoding(value, add_identity=add_identity)
 
 
 # Accept-Language
@@ -340,17 +348,19 @@ _PARSERS[b'accept-language'] = _Parser(_parse_accept_language, _MergeType.NONE)
 def accept_language(
         headers: Headers,
         *,
-        add_wildcard: bool = False
+        add_wildcard: bool = False,
+        default: Optional[Mapping[bytes, float]] = None
 ) -> Optional[Mapping[bytes, float]]:
     """Extracts the accept language header if it exists into a mapping of the
     encoding and the quality value which defaults to 1.0 if missing.
 
     :param headers: The headers to search.
     :param add_wildcard: If True ensures the '*' charset is included.
+    :param default: An optional default value.
     :return: A mapping of the encodings and qualities.
     """
     value = find(b'accept-language', headers)
-    return None if value is None else _parse_accept_language(value, add_wildcard=add_wildcard)
+    return default if value is None else _parse_accept_language(value, add_wildcard=add_wildcard)
 
 
 # Accept-Patch
@@ -371,14 +381,20 @@ def _parse_accept_patch(value: bytes) -> List[Tuple[bytes, Optional[bytes]]]:
 _PARSERS[b'accept-patch'] = _Parser(_parse_accept_encoding, _MergeType.NONE)
 
 
-def accept_patch(headers: Headers) -> Optional[List[Tuple[bytes, Optional[bytes]]]]:
-    """
+def accept_patch(
+        headers: Headers,
+        *,
+        default: Optional[List[Tuple[bytes, Optional[bytes]]]] = None
+) -> Optional[List[Tuple[bytes, Optional[bytes]]]]:
+    """The Accept-Patch response HTTP header advertises which media-type the
+    server is able to understand.
 
     :param headers: The headers to search.
+    :param default: An optional default value.
     :return: An optional list of tuples of media type and optional charset.
     """
     value = find(b'accept-patch', headers)
-    return None if value is None else _parse_accept_patch(value)
+    return default if value is None else _parse_accept_patch(value)
 
 
 # Accept-Ranges
@@ -390,14 +406,19 @@ def _parse_accept_ranges(value: bytes) -> bytes:
 _PARSERS[b'accept-ranges'] = _Parser(_parse_accept_ranges, _MergeType.NONE)
 
 
-def accept_ranges(headers: Headers) -> Optional[bytes]:
+def accept_ranges(
+        headers: Headers,
+        *,
+        default: Optional[bytes] = None
+) -> Optional[bytes]:
     """Returns the value of the accept ranges header of None if missing
 
     :param headers: The headers
+    :param default: An optional default value.
     :return: The header value (bytes or none)
     """
     value = find(b'accept-ranges', headers)
-    return None if value is None else _parse_accept_ranges(value)
+    return default if value is None else _parse_accept_ranges(value)
 
 
 # Access-Control-Allow-Credentials
@@ -410,14 +431,19 @@ _PARSERS[b'access-control-allow-credentials'] = _Parser(
     _parse_access_control_allow_credentials, _MergeType.NONE)
 
 
-def access_control_allow_credentials(headers: Headers) -> Optional[bool]:
+def access_control_allow_credentials(
+        headers: Headers,
+        *,
+        default: Optional[bool] = None
+) -> Optional[bool]:
     """Extracts the access control allow credentials header as a bool or None if missing.
 
     :param headers: The headers.
+    :param default: An optional default value.
     :return: a bool or None
     """
     value = find(b'access-control-allow-credentials', headers)
-    return None if value is None else _parse_access_control_allow_credentials(value)
+    return default if value is None else _parse_access_control_allow_credentials(value)
 
 
 # Access-Control-Allow-Headers
@@ -426,18 +452,24 @@ _PARSERS[b'access-control-allow-headers'] = _Parser(
     _parse_comma_separated_list, _MergeType.NONE)
 
 
-def access_control_allow_headers(headers: Headers) -> Optional[List[bytes]]:
+def access_control_allow_headers(
+        headers: Headers,
+        *,
+        default: Optional[List[bytes]] = None
+) -> Optional[List[bytes]]:
     """The Access-Control-Allow-Headers response header is used in response to
     a preflight request which includes the Access-Control-Request-Headers to
     indicate which HTTP headers can be used during the actual request.
 
     :param headers: The headers
     :type headers: Headers
+    :param default: An optional default value.
+    :type default: Optional[List[bytes]]
     :return: A list of the allowed headers or '*' for all headers.
     :rtype: Optional[List[bytes]]
     """
     value = find(b'access-control-allow-headers', headers)
-    return None if value is None else _parse_comma_separated_list(value)
+    return default if value is None else _parse_comma_separated_list(value)
 
 
 # Access-Control-Allow-Methods
@@ -446,7 +478,11 @@ _PARSERS[b'access-control-allow-methods'] = _Parser(
     _parse_comma_separated_list, _MergeType.NONE)
 
 
-def access_control_allow_methods(headers: Headers) -> Optional[List[bytes]]:
+def access_control_allow_methods(
+        headers: Headers,
+        *,
+        default: Optional[List[bytes]] = None
+) -> Optional[List[bytes]]:
     """The Access-Control-Allow-Methods response header specifies the method or
     methods allowed when accessing the resource in response to a preflight
     request.
@@ -457,7 +493,7 @@ def access_control_allow_methods(headers: Headers) -> Optional[List[bytes]]:
     :rtype: Optional[List[bytes]]
     """
     value = find(b'access-control-allow-methods', headers)
-    return None if value is None else _parse_comma_separated_list(value)
+    return default if value is None else _parse_comma_separated_list(value)
 
 
 # Access-Control-Allow-Origin
@@ -466,7 +502,11 @@ _PARSERS[b'access-control-allow-origin'] = _Parser(
     _pass_through, _MergeType.NONE)
 
 
-def access_control_allow_origin(headers: Headers) -> Optional[bytes]:
+def access_control_allow_origin(
+        headers: Headers,
+        *,
+        default: Optional[bytes] = None
+) -> Optional[bytes]:
     """The Access-Control-Allow-Origin response header indicates whether the
     response can be shared with requesting code from the given origin.
 
@@ -475,7 +515,8 @@ def access_control_allow_origin(headers: Headers) -> Optional[bytes]:
     :return: The origin or '*' for all origins, or 'null'
     :rtype: Optional[bytes]
     """
-    return find(b'access-control-allow-origin', headers)
+    value = find(b'access-control-allow-origin', headers)
+    return default if value is None else value
 
 # Access-Control-Expose-Headers
 
@@ -504,7 +545,8 @@ _PARSERS[b'access-control-expose-headers'] = _Parser(
 def access_control_expose_headers(
         headers: Headers,
         *,
-        add_simple_response_headers: bool = False
+        add_simple_response_headers: bool = False,
+        default: Optional[List[bytes]] = None
 ) -> Optional[List[bytes]]:
     """The Access-Control-Expose-Headers response header indicates which headers
     can be exposed as part of the response by listing their names.
@@ -514,11 +556,13 @@ def access_control_expose_headers(
     :param add_simple_response_headers: If true add the safelisted headers,
         defaults to False
     :type add_simple_response_headers: bool, optional
+    :param default: An optional default value, defaults to None
+    :type default: Optional[List[bytes]]
     :return: The headers to expose
     :rtype: Optional[List[bytes]]
     """
     value = find(b'access-control-expose-headers', headers)
-    return None if value is None else _parse_access_control_expose_headers(
+    return default if value is None else _parse_access_control_expose_headers(
         value,
         add_simple_response_headers=add_simple_response_headers
     )
@@ -528,7 +572,11 @@ def access_control_expose_headers(
 _PARSERS[b'access-control-max-age'] = _Parser(_parse_int, _MergeType.NONE)
 
 
-def access_control_max_age(headers: Headers) -> Optional[int]:
+def access_control_max_age(
+        headers: Headers,
+        *,
+        default: Optional[int]
+) -> Optional[int]:
     """The Access-Control-Max-Age response header indicates how long the results
     of a preflight request (that is the information contained in the
     Access-Control-Allow-Methods and Access-Control-Allow-Headers headers) can
@@ -536,11 +584,13 @@ def access_control_max_age(headers: Headers) -> Optional[int]:
 
     :param headers: The headers
     :type headers: Headers
+    :param default: An optional default value, defaults to None
+    :type default: Optional[List[bytes]]
     :return: The number of seconds
     :rtype: Optional[int]
     """
     value = find(b'access-control-max-age', headers)
-    return None if value is None else _parse_int(value)
+    return default if value is None else _parse_int(value)
 
 # Access-Control-Request-Headers
 
@@ -548,25 +598,35 @@ _PARSERS[b'access-control-request-headers'] = _Parser(
     _parse_comma_separated_list, _MergeType.NONE)
 
 
-def access_control_request_headers(headers: Headers) -> Optional[List[bytes]]:
+def access_control_request_headers(
+        headers: Headers,
+        *,
+        default: Optional[List[bytes]] = None
+) -> Optional[List[bytes]]:
     """The Access-Control-Request-Headers request header is used by browsers
     when issuing a preflight request, to let the server know which HTTP headers
     the client might send when the actual request is made.
 
     :param headers: The headers
     :type headers: Headers
+    :param default: An optional default value, defaults to None
+    :type default: Optional[List[bytes]]
     :return: The request headers
     :rtype: Optional[List[bytes]]
     """
     value = find(b'access-control-request-headers', headers)
-    return None if value is None else _parse_comma_separated_list(value)
+    return default if value is None else _parse_comma_separated_list(value)
 
 # Access-Control-Request-Method
 
 _PARSERS[b'access-control-request-method'] = _Parser(
     _pass_through, _MergeType.NONE)
 
-def access_control_request_method(headers: Headers) -> Optional[bytes]:
+def access_control_request_method(
+        headers: Headers,
+        *,
+        default: Optional[bytes] = None
+) -> Optional[bytes]:
     """The Access-Control-Request-Method request header is used by browsers when
     issuing a preflight request, to let the server know which HTTP method will
     be used when the actual request is made. This header is necessary as the
@@ -575,23 +635,31 @@ def access_control_request_method(headers: Headers) -> Optional[bytes]:
 
     :param headers: The headers
     :type headers: Headers
+    :param default: An optional default value, defaults to None
+    :type default: Optional[List[bytes]]
     :return: The method
     :rtype: Optional[bytes]
     """
     value = find(b'access-control-request-method', headers)
-    return None if value is None else _pass_through(value)
+    return default if value is None else _pass_through(value)
 
 # Age
 
 _PARSERS[b'age'] = _Parser(_parse_int, _MergeType.NONE)
 
 
-def age(headers: Headers) -> Optional[int]:
+def age(
+        headers: Headers,
+        *,
+        default: Optional[int] = None
+) -> Optional[int]:
     """The Age header contains the time in seconds the object has been in a
     proxy cache.
 
     :param headers: The headers
     :type headers: Headers
+    :param default: An optional default value, defaults to None
+    :type default: Optional[List[bytes]]
     :return: The time in seconds
     :rtype: Optional[int]
     """
@@ -603,16 +671,22 @@ def age(headers: Headers) -> Optional[int]:
 _PARSERS[b'allow'] = _Parser(_parse_comma_separated_list, _MergeType.NONE)
 
 
-def allow(headers: Headers) -> Optional[List[bytes]]:
+def allow(
+        headers: Headers,
+        *,
+        default: Optional[List[bytes]] = None
+) -> Optional[List[bytes]]:
     """The Allow header lists the set of methods supported by a resource.
 
     :param headers: The headers
     :type headers: Headers
+    :param default: An optional default value, defaults to None
+    :type default: Optional[List[bytes]]
     :return: A list of methods
     :rtype: Optional[List[bytes]]
     """
     value = find(b'allow', headers)
-    return None if value is None else _parse_comma_separated_list(value)
+    return default if value is None else _parse_comma_separated_list(value)
 
 def _parse_authorization(value: bytes) -> Tuple[bytes, bytes]:
     auth_type, _, credentials = value.partition(b' ')
@@ -620,18 +694,24 @@ def _parse_authorization(value: bytes) -> Tuple[bytes, bytes]:
 
 _PARSERS[b'authorization'] = _Parser(_parse_authorization, _MergeType.NONE)
 
-def authorization(headers: Headers) -> Optional[Tuple[bytes, bytes]]:
+def authorization(
+        headers: Headers,
+        *,
+        default: Optional[Tuple[bytes, bytes]] = None
+) -> Optional[Tuple[bytes, bytes]]:
     """The HTTP Authorization request header contains the credentials to
     authenticate a user agent with a server, usually after the server has
     responded with a 401 Unauthorized status and the WWW-Authenticate header.
 
     :param headers: The headers
     :type headers: Headers
+    :param default: An optional default value, defaults to None
+    :type default: Optional[List[bytes]]
     :return: The type and credentials
     :rtype: Optional[Tuple[bytes, bytes]]
     """
     value = find(b'authorization', headers)
-    return None if value is None else _parse_authorization(value)
+    return default if value is None else _parse_authorization(value)
 
 # Cache-Control
 
@@ -645,7 +725,11 @@ def _parse_cache_control(value: bytes) -> Mapping[bytes, Optional[int]]:
 _PARSERS[b'cache-control'] = _Parser(_parse_cache_control, _MergeType.NONE)
 
 
-def cache_control(headers: Headers) -> Optional[Mapping[bytes, Optional[int]]]:
+def cache_control(
+        headers: Headers,
+        *,
+        default: Optional[Mapping[bytes, Optional[int]]] = None
+) -> Optional[Mapping[bytes, Optional[int]]]:
     """The Cache-Control general-header field is used to specify directives for
     caching mechanisms in both requests andresponses. Caching directives are
     unidirectional, meaning that a given directive in a request is not implying
@@ -653,11 +737,13 @@ def cache_control(headers: Headers) -> Optional[Mapping[bytes, Optional[int]]]:
 
     :param headers: The headers
     :type headers: Headers
+    :param default: An optional default value, defaults to None
+    :type default: Optional[Mapping[bytes, Optional[int]]]
     :return: A dictionary of the directives and values
     :rtype: Optional[Mapping[bytes, Optional[int]]]
     """
     value = find(b'cache-control', headers)
-    return None if value is None else _parse_cache_control(value)
+    return default if value is None else _parse_cache_control(value)
 
 
 # Clear-Site-Data
@@ -666,18 +752,24 @@ _PARSERS[b'clear-site-data'] = _Parser(
     _parse_comma_separated_list, _MergeType.NONE)
 
 
-def clear_site_data(headers: Headers) -> Optional[List[bytes]]:
+def clear_site_data(
+        headers: Headers,
+        *,
+        default: Optional[List[bytes]]
+) -> Optional[List[bytes]]:
     """The Clear-Site-Data header clears browsing data (cookies, storage, cache)
     associated with the requesting website. It allows web developers to have
     more control over the data stored locally by a browser for their origins.
 
     :param headers: The headers
     :type headers: Headers
+    :param default: An optional default value, defaults to None
+    :type default: Optional[List[bytes]]
     :return: A list of the directives.
     :rtype: Optional[List[bytes]]
     """
     value = find(b'clear-site-data', headers)
-    return None if value is None else _parse_comma_separated_list(value)
+    return default if value is None else _parse_comma_separated_list(value)
 
 
 # Connection
@@ -685,7 +777,11 @@ def clear_site_data(headers: Headers) -> Optional[List[bytes]]:
 _PARSERS[b'connection'] = _Parser(_pass_through, _MergeType.NONE)
 
 
-def connection(headers: Headers) -> Optional[bytes]:
+def connection(
+        headers: Headers,
+        *,
+        default: Optional[bytes]
+) -> Optional[bytes]:
     """The Connection general header controls whether or not the network
     connection stays open after the current transaction finishes. If the value
     sent is keep-alive, the connection is persistent and not closed, allowing
@@ -693,10 +789,13 @@ def connection(headers: Headers) -> Optional[bytes]:
 
     :param headers: The headers
     :type headers: Headers
+    :param default: An optional default value, defaults to None
+    :type default: Optional[List[bytes]]
     :return: The value
     :rtype: Optional[bytes]
     """
-    return find(b'connection', headers)
+    value = find(b'connection', headers)
+    return default if value is none else value
 
 # Content-Disposition
 
