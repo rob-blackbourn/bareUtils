@@ -136,6 +136,19 @@ def parse_quality(value: bytes) -> Optional[float]:
     return float(quality)
 
 
+def parse_accept_quality(value: bytes) -> Tuple[bytes, Any]:
+    """Parse a quality attribute of the form 'q=0.5'
+
+    :param value: The attribute value
+    :return: The value as a float or None if there was no value.
+    :raises: ValueError if there was a 'q' qualifier, but no value.
+    """
+    if value == b'':
+        return b'q',1.0
+    name, quality = value.split(b'=')
+    return name, float(quality) if name == b'q' else quality
+
+
 def _parse_media_type_and_encoding(
         value: bytes
 ) -> Tuple[bytes, Optional[bytes]]:
@@ -151,14 +164,18 @@ def _parse_media_type_and_encoding(
 
 # Accept
 
-def _parse_accept(value: bytes, *, add_wildcard: bool = False) -> Mapping[bytes, float]:
+def _parse_accept(
+        value: bytes,
+        *,
+        add_wildcard: bool = False
+) -> Mapping[bytes, Tuple[bytes, Any]]:
     values = {
-        first: parse_quality(rest) or 1.0
-        for first, sep, rest in [x.partition(b';') for x in value.split(b', ')]
+        first: parse_accept_quality(rest)
+        for first, sep, rest in [x.strip().partition(b';') for x in value.split(b',')]
     }
 
     if add_wildcard and b'*' not in values:
-        values[b'*'] = 1.0
+        values[b'*'] = (b'q', 1.0)
 
     return values
 
