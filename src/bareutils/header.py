@@ -225,7 +225,7 @@ def accept_ch_lifetime(
     """The Accept-CH-Lifetime header is set by the server to specify the
     persistence of Accept-CH header value that specifies for which Client Hints
     headers client should include in subsequent requests.
-    
+
     :param headers: The headers
     :type headers: Headers
     :param default: An optional default value, defaults to None
@@ -664,7 +664,7 @@ def age(
     :rtype: Optional[int]
     """
     value = find(b'age', headers)
-    return None if value is None else _parse_int(value)
+    return default if value is None else _parse_int(value)
 
 # Allow
 
@@ -795,7 +795,7 @@ def connection(
     :rtype: Optional[bytes]
     """
     value = find(b'connection', headers)
-    return default if value is none else value
+    return default if value is None else value
 
 # Content-Disposition
 
@@ -1134,7 +1134,7 @@ def dnt(
     """The DNT (Do Not Track) request header indicates the user's tracking
     preference. It lets users indicate whether they would prefer privacy rather
     than personalized content.
-    
+
     :param headers: The headers
     :type headers: Headers
     :param default: An optional default value, defaults to None
@@ -1176,7 +1176,7 @@ def device_memory(
     """The Device-Memory header is a Device Memory API header that works like
     Client Hints header which represents the approximate amount of RAM client
     device has.
-    
+
     :param headers: The headers
     :type headers: Headers
     :param default: An optional default value, defaults to None
@@ -1198,7 +1198,7 @@ def expect(
         default: Optional[bytes] = None
 ) -> Optional[bytes]:
     """Returns the expect header
-    
+
     :param headers: The headers
     :type headers: Headers
     :param default: An optional default value, defaults to None
@@ -1249,7 +1249,7 @@ def host(
         default: Optional[Tuple[bytes, Optional[int]]] = None
 ) ->  Optional[Tuple[bytes, Optional[int]]]:
     """Returns the host header as a name, port tuple
-    
+
     :param headers: The headers
     :type headers: Headers
     :param default: Optional default, defaults to None
