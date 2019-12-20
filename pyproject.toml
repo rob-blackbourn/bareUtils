@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "bareutils"
-version = "3.2.0"
+version = "3.3.0"
 description = "Utilities for bareASGI and bareClient"
 authors = ["Rob Blackbourn <rob.blackbourn@gmail.com>"]
 license = "Apache-2.0"
