@@ -1,54 +1,63 @@
-"""
-HTTP Status codes
+"""HTTP Status codes
 """
 
 
 def is_information(code: int) -> bool:
-    """
-    Return true if the code is an information HTTP response code.
+    """Return true if the code is an information HTTP response code.
 
-    :param code: The HTTP response code.
-    :return: True if the code was informational else false.
+    Args:
+        code (int): The HTTP response code.
+
+    Returns:
+        bool: True if the code was informational else false.
     """
     return code >= 100 and code < 200
 
 
 def is_successful(code: int) -> bool:
-    """
-    Return true if the code is a successful HTTP response code.
+    """Return true if the code is a successful HTTP response code.
 
-    :param code: The HTTP response code.
-    :return: True if the code was successful else false.
+    Args:
+        code (int): The HTTP response code.
+
+    Returns:
+        bool: True if the code was successful else false.
     """
     return code >= 200 and code < 300
 
 
 def is_redirection(code: int) -> bool:
-    """
-    Return true if the code is aa redirection HTTP response code.
+    """Return true if the code is aa redirection HTTP response code.
 
-    :param code: The HTTP response code.
-    :return: True if the code was a redirection else false.
+    Args:
+        code (int): The HTTP response code.
+
+    Returns:
+        bool: True if the code was a redirection else false.
     """
     return code >= 300 and code < 400
 
 
 def is_client_error(code: int) -> bool:
-    """
-    Return true if the code is a client error HTTP response code.
+    """Return true if the code is a client error HTTP response code.
 
-    :param code: The HTTP response code.
-    :return: True if the code was a client error else false.
+    Args:
+        code (int): The HTTP response code.
+
+    Returns:
+        bool: True if the code was a client error else false.
     """
     return code >= 400 and code < 500
 
 
 def is_server_error(code: int) -> bool:
-    """
-    Return true if the code is a server error HTTP response code.
+    """Return true if the code is a server error HTTP response code.
 
-    :param code: The HTTP response code.
-    :return: True if the code was a server error else false.
+    Args:
+        code (int): The HTTP response code.
+
+    Returns:
+        bool: True if the code was a server error else false.
     """
     return code >= 500 and code < 600
 
