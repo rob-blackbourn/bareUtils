@@ -19,24 +19,26 @@ class Compressor(metaclass=ABCMeta):
     def compress(self, buf: bytes) -> bytes:
         """Compress a buffer
 
-        :param buf: The buffer to compress
-        :type buf: bytes
-        :return: The compressed buffer
-        :rtype: bytes
+        Args:
+            buf (bytes): The buffer to compress.
+
+        Returns:
+            bytes: The compressed buffer.
         """
 
     def flush(self) -> bytes:
         """Flush the compressor
 
-        :return: The remaining bytes
-        :rtype: bytes
+        Returns:
+            bytes: The remaining bytes.
         """
 
 
 def make_gzip_compressobj() -> Compressor:
     """Make a compressor for 'gzip'
 
-    :return: A gzip compressor.
+    Returns:
+        Compressor: A gzip compressor.
     """
     return zlib.compressobj(9, zlib.DEFLATED, zlib.MAX_WBITS | 16)
 
@@ -44,7 +46,8 @@ def make_gzip_compressobj() -> Compressor:
 def make_deflate_compressobj() -> Compressor:
     """Make a compressor for 'deflate'
 
-    :return: A deflate compressor.
+    Returns:
+        Compressor: A deflate compressor.
     """
     return zlib.compressobj(9, zlib.DEFLATED, -zlib.MAX_WBITS)
 
@@ -52,9 +55,10 @@ def make_deflate_compressobj() -> Compressor:
 def make_compress_compressobj() -> Compressor:
     """Make a compressor for 'compress'
 
-    :return: A compress compressor.
-
     Note: This is not used by browsers anymore and should be avoided.
+
+    Returns:
+        Compressor: A compress compressor.
     """
     return zlib.compressobj(9, zlib.DEFLATED, zlib.MAX_WBITS)
 
@@ -65,9 +69,12 @@ async def compression_writer_adapter(
 ) -> Content:
     """Adapts a bytes generator to generated compressed output.
 
-    :param writer: The writer to be adapted.
-    :param compressobj: A compressor
-    :return: A generator producing compressed output.
+    Args:
+        writer (Content): The writer to be adapted.
+        compressobj (Compressor): A compressor
+
+    Yields:
+        Content: The compressed content as bytes
     """
     async for buf in writer:
         yield compressobj.compress(buf)
@@ -79,12 +86,16 @@ def compression_writer(
         compressobj: Compressor,
         chunk_size: int = -1
 ) -> Content:
-    """Create an async generator for compressed content.
+    """Create an async iterator for compressed content.
 
-    :param buf: The bytes to compress
-    :param compressobj: The compressor.
-    :param chunk_size: An optional chunk size where -1 indicates no chunking.
-    :return: An sync generator of compressed bytes.
+    Args:
+        buf (bytes): The bytes to compress.
+        compressobj (Compressor): The compressor.
+        chunk_size (int, optional): An optional chunk size where -1 indicates no
+            chunking. Defaults to -1.
+
+    Returns:
+        Content: An async iterator of compressed bytes.
     """
     return compression_writer_adapter(bytes_writer(buf, chunk_size), compressobj)
 
@@ -123,7 +134,8 @@ class Decompressor(metaclass=ABCMeta):
 def make_gzip_decompressobj() -> Decompressor:
     """Make a compressor for 'gzip'
 
-    :return: A gzip compressor.
+    Returns:
+        Decompressor: A gzip compressor.
     """
     return zlib.decompressobj(zlib.MAX_WBITS | 16)
 
@@ -131,7 +143,8 @@ def make_gzip_decompressobj() -> Decompressor:
 def make_deflate_decompressobj() -> Decompressor:
     """Make a compressor for 'deflate'
 
-    :return: A deflate compressor.
+    Returns:
+        Decompressor: A deflate compressor.
     """
     return zlib.decompressobj(-zlib.MAX_WBITS)
 
@@ -139,9 +152,10 @@ def make_deflate_decompressobj() -> Decompressor:
 def make_compress_decompressobj() -> Decompressor:
     """Make a compressor for 'compress'
 
-    :return: A compress compressor.
-
     Note: This is not used by browsers anymore and should be avoided.
+
+    Returns:
+        Decompressor: A compress compressor.
     """
     return zlib.decompressobj(9, zlib.DEFLATED, zlib.MAX_WBITS)
 
