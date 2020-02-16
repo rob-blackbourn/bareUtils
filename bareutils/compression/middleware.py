@@ -30,19 +30,22 @@ class CompressionMiddleware:
     ) -> None:
         """Constructs the compression middleware.
 
-        :param compressors: A dictionary of encoding to compressor factories.
-        :param minimum_size: The size below which no compression will be attempted.
+        Note how the compression functions are passed rather than the
+        compressors, as a fresh compressor is required for each message.
 
-        Note how the compression functions are passed rather than the compressors,
-        as a fresh compressor is required for each message.
+        ```python
+        compressors = {
+            b'gzip': make_gzip_compressobj,
+            b'deflate': make_deflate_compressobj
+        }
+        return CompressionMiddleware(compressors, minimum_size)
+        ```
 
-        .. code-block:: python
-
-            compressors = {
-                b'gzip': make_gzip_compressobj,
-                b'deflate': make_deflate_compressobj
-            }
-            return CompressionMiddleware(compressors, minimum_size)
+        Args:
+            compressors (Mapping[bytes, Callable[[], Compressor]]): A dictionary
+                of encoding to compressor factories.
+            minimum_size (int, optional): The size below which no compression
+                will be attempted. Defaults to 512.
         """
         self.compressors = compressors
         self.minimum_size = minimum_size
@@ -54,22 +57,28 @@ class CompressionMiddleware:
     ) -> bool:
         """Returns True if the requested encoding is acceptable.
 
-        :param accept_encoding: The acceptable encodings.
-        :param content_encoding: The current content encoding.
-        :return: True if acceptable, otherwise False.
-
         If the quality value of 'identity' is specified as 0 we must support
         one of the other encodings.
 
         We must check the current encoding as it is possible that the this is
         already sufficient.
+
+        Args:
+            accept_encoding (Mapping[bytes, float]): The acceptable encodings.
+            content_encoding (List[bytes]): The current content encoding.
+
+        Returns:
+            bool: True if acceptable, otherwise False.
         """
         # Must the response be encoded?
         if accept_encoding[b'identity'] == 0.0:
             acceptable = {encoding for encoding,
                           quality in accept_encoding.items() if quality != 0}
             current_encodings = {
-                encoding for encoding in content_encoding if encoding != b'identity'}
+                encoding
+                for encoding in content_encoding
+                if encoding != b'identity'
+            }
             available = set(self.compressors.keys()) | current_encodings
             if len(acceptable & available) == 0:
                 # No acceptable encodings are available.
@@ -85,14 +94,17 @@ class CompressionMiddleware:
     ) -> bool:
         """Returns True if the compression is desirable.
 
-        :param accept_encoding: The requested encodings.
-        :param content_encoding: The current encoding.
-        :param content_length: The content length if available.
-        :return: True if compression is desirable, otherwise False.
+        While compression might be possible it may not be desirable. For example
+        the content may already be compressed (e.g. for an image), or the
+        content length may be too small to be worth the effort.
 
-        While compression might be possible it may not be desirable. For example the
-        content may already be compressed (e.g. for an image), or the content length
-        may be too small to be worth the effort.
+        Args:
+            accept_encoding (Mapping[bytes, float]): The requested encodings.
+            content_encoding (List[bytes]): The current encoding.
+            content_length (Optional[int]): The content length if available.
+
+        Returns:
+            bool: True if compression is desirable, otherwise False.
         """
         if content_length is not None and content_length < self.minimum_size:
             return False
@@ -122,10 +134,11 @@ class CompressionMiddleware:
     def select_encoding(self, accept_encoding: Mapping[bytes, float]) -> bytes:
         """Select the encoding based on the accepted encodings
 
-        :param accept_encoding: The accepted encodings
-        :type accept_encoding: Mapping[bytes, float]
-        :return: The selected encoding
-        :rtype: bytes
+        Args:
+            accept_encoding (Mapping[bytes, float]): The accepted encodings.
+
+        Returns:
+            bytes: The selected encoding.
         """
         acceptable = sorted([
             (encoding, quality)
@@ -133,7 +146,11 @@ class CompressionMiddleware:
             if quality != 0 and encoding != b'identity'
         ], key=lambda x: x[1])
 
-        return next(encoding for encoding, _ in acceptable if encoding in self.compressors)
+        return next(
+            encoding
+            for encoding, _ in acceptable
+            if encoding in self.compressors
+        )
 
     async def __call__(
             self,
@@ -145,12 +162,16 @@ class CompressionMiddleware:
     ) -> HttpResponse:
         """Call the handler and compress the body if appropriate.
 
-        :param scope: The scope passed through from the ASGI server.
-        :param info: Application supplied information.
-        :param matches: The route matches.
-        :param content: The request content.
-        :param handler: The handler to call and possibly compress the output of.
-        :return: The response.
+        Args:
+            scope (Scope): The scope passed through from the ASGI server.
+            info (Info): Application supplied information.
+            matches (RouteMatches): The route matches.
+            content (Content): The request content.
+            handler (HttpRequestCallback): The handler to call and possibly
+                compress the output of.
+
+        Returns:
+            HttpResponse: The response.
         """
         status, headers, body, pushes = await handler(scope, info, matches, content)
 
@@ -197,17 +218,22 @@ def make_default_compression_middleware(
         *,
         minimum_size: int = 512
 ) -> CompressionMiddleware:
-    """Makes the compression middleware with the default compressors: gzip, and deflate.
-
-    :param minimum_size: An optional size below which no compression is performed.
-    :return: The compression middleware.
+    """Makes the compression middleware with the default compressors: gzip, and
+    deflate.
 
     The following adds the middleware, setting the minimum size to 1024
 
-    .. code-black:: python
+    ```python
+    compression_middleware = make_default_compression_middleware(minimum_size=1024)
+    app = Application(middlewares=[compression_middleware])
+    ```
 
-        compression_middleware = make_default_compression_middleware(minimum_size=1024)
-        app = Application(middlewares=[compression_middleware])
+    Args:
+        minimum_size (int, optional): An optional size below which no
+            compression is performed. Defaults to 512.
+
+    Returns:
+        CompressionMiddleware: The compression middleware.
     """
     compressors = {
         b'gzip': make_gzip_compressobj,
