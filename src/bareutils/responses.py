@@ -1,6 +1,10 @@
+"""Responses"""
+
 import json
-from typing import List, Union, Mapping, Any, Optional
+from typing import Any, Callable, Optional
+
 from baretypes import Headers, HttpResponse, PushResponses
+
 from .streaming import bytes_writer
 
 
@@ -12,18 +16,22 @@ def bytes_response(
         chunk_size: int = -1,
         pushes: Optional[PushResponses] = None
 ) -> HttpResponse:
-    """
-    A helper function to create a bytes response.
+    """A helper function to create a bytes response.
 
-    :param status: The HTTP status code.
-    :param headers: The HTTP headers.
-    :param buf: The date to send.
-    :param content_type: The content type of the data (defaults to application/octet-stream).
-    :param chunk_size: The size of each chunk to send or -1 to send as a single chunk.
-    :param pushes: Optional posh responses for http/2.
-    :return: The HTTP response.
-    """
+    Args:
+        status (int): The HTTP status code.
+        headers (Optional[Headers]): The HTTP headers.
+        buf (bytes): The data to send.
+        content_type (bytes, optional): The content type of the data. Defaults
+            to b'application/octet-stream'.
+        chunk_size (int, optional): The size of each chunk to send or -1 to send
+            as a single chunk. Defaults to -1.
+        pushes (Optional[PushResponses], optional): Optional posh responses for
+            HTTP/2. Defaults to None.
 
+    Returns:
+        HttpResponse: The HTTP response.
+    """
     headers = [] if headers is None else list(headers)
 
     headers.append((b'content-type', content_type))
@@ -42,42 +50,50 @@ def text_response(
         chunk_size: int = -1,
         pushes: Optional[PushResponses] = None
 ) -> HttpResponse:
-    """
-    A helper function to create a text response.
+    """A helper function to create a text response.
 
-    :param status: The HTTP status code.
-    :param headers: The HTTP headers.
-    :param text: The text to send.
-    :param encoding: The text encoding (defauults to utf-8).
-    :param content_type: The content type (defaults to text/plain).
-    :param chunk_size: The size of each chunk to send or -1 to send as a single chunk.
-    :param pushes: Optional posh responses for http/2.
-    :return: The HTTP response.
-    """
+    Args:
+        status (int): The HTTP status code.
+        headers (Optional[Headers]): The HTTP headers.
+        text (str): The text to send.
+        encoding (str, optional): [description]. Defaults to 'utf-8'.
+        content_type (bytes, optional): The content type. Defaults to b'text/plain'.
+        chunk_size (int, optional): The size of each chunk to send or -1 to send
+            as a single chunk. Defaults to -1.
+        pushes (Optional[PushResponses], optional): Optional posh responses for
+            HTTP/2. Defaults to None.
 
+    Returns:
+        HttpResponse: The HTTP response.
+    """
     return bytes_response(status, headers, text.encode(encoding), content_type, chunk_size, pushes)
 
 
 def json_response(
         status: int,
         headers: Optional[Headers],
-        obj: Union[List[Any], Mapping[str, Any]],
+        obj: Any,
         content_type: bytes = b'application/json',
-        dumps=json.dumps,
+        dumps: Callable[[Any], str] = json.dumps,
         chunk_size: int = -1,
         pushes: Optional[PushResponses] = None
 ) -> HttpResponse:
-    """
-    A helper function to send a json repsonse.
+    """A helper function to send a json response.
 
-    :param status: The HTTP status code.
-    :param headers: The HTTP headers.
-    :param obj: The object to send as JSON.
-    :param content_type: The content type (defaults to application/json).
-    :param dumps: The function to use to turn the object into JSON (defaults to json.dumps)
-    :param chunk_size: The size of each chunk to send or -1 to send as a single chunk.
-    :param pushes: Optional posh responses for http/2.
-    :return: The HTTP response.
-    """
+    Args:
+        status (int): The HTTP status code.
+        headers (Optional[Headers]): The HTTP headers.
+        obj (Any): The object to send as JSON.
+        content_type (bytes, optional): The content type. Defaults to
+            b'application/json'.
+        dumps (Callable[[Any], str], optional): The function to use to turn the
+            object into JSON. Defaults to json.dumps.
+        chunk_size (int, optional): The size of each chunk to send or -1 to send
+            as a single chunk. Defaults to -1.
+        pushes (Optional[PushResponses], optional): Optional posh responses for
+            HTTP/2. Defaults to None.
 
+    Returns:
+        HttpResponse: The HTTP response.
+    """
     return text_response(status, headers, dumps(obj), 'utf-8', content_type, chunk_size, pushes)
