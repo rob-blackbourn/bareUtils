@@ -27,11 +27,14 @@ MONTH_NAMES = ("Jan", "Feb", "Mar", "Apr", "May", "Jun",
 def parse_date(value: str) -> datetime:
     """Parse a date according to RFC 7231, section 7.1.1.2: Date
 
-    :param value: The string to parse
-    :type value: str
-    :raises ParseError: Raised if the date could not be parsed
-    :return: The parsed datetime
-    :rtype: datetime
+    Args:
+        value (str): The string to parse
+
+    Raises:
+        ParseError: If the string cannot be parsed to a date
+
+    Returns:
+        datetime: The parsed datetime
     """
     matches = DATE_PATTERN.match(value)
     if matches is None:
@@ -52,10 +55,11 @@ def parse_date(value: str) -> datetime:
 def format_date(value: datetime) -> str:
     """Format a date according to RFC 7231, section 7.1.1.2: Date
 
-    :param value: The value to format
-    :type value: datetime
-    :return: The formatted date
-    :rtype: str
+    Args:
+        value (datetime): The datetime to format
+
+    Returns:
+        str: The formatted datetime
     """
     time_tuple = value.utctimetuple()
     return "{day}, {mday:02d} {mon} {year:04d} {hour:02d}:{min:02d}:{sec:02d} GMT".format(
@@ -83,27 +87,26 @@ def encode_set_cookie(
 ) -> bytes:
     """Encode set-cookie
 
-    :param name: The cookie name
-    :type name: bytes
-    :param value: The cookie value
-    :type value: bytes
-    :param expires: The time the cookie expires, defaults to None
-    :type expires: Optional[datetime], optional
-    :param max_age: The maximum age of the cookie in seconds, defaults to None
-    :type max_age: Optional[Union[int, timedelta]], optional
-    :param path: The cookie path, defaults to None
-    :type path: Optional[bytes], optional
-    :param domain: The cookie domain, defaults to None
-    :type domain: Optional[bytes], optional
-    :param secure: Indicates if the cookie is restricted to https, defaults to False
-    :type secure: bool, optional
-    :param http_only: Indicates if the cookie is available to the API, defaults to False
-    :type http_only: bool, optional
-    :param same_site: CORS directive, defaults to None
-    :type same_site: Optional[bytes], optional
-    :raises RuntimeError: Raised if the __Secure- or __Host- was used without secure
-    :return: The set-cookie header
-    :rtype: bytes
+    Args:
+        name (bytes): The cookie name
+        value (bytes): The cookie value
+        expires (Optional[datetime], optional): The time the cookie expires.
+            Defaults to None.
+        max_age (Optional[Union[int, timedelta]], optional): The maximum age of
+            the cookie in seconds. Defaults to None.
+        path (Optional[bytes], optional): The cookie path. Defaults to None.
+        domain (Optional[bytes], optional): The cookie domain. Defaults to None.
+        secure (bool, optional): Indicates if the cookie is restricted to https.
+            Defaults to False.
+        http_only (bool, optional): Indicates if the cookie is available to the
+            API. Defaults to False.
+        same_site (Optional[bytes], optional): CORS directive. Defaults to None.
+
+    Raises:
+        RuntimeError: Raised if the __Secure- or __Host- was used without secure
+
+    Returns:
+        bytes: The set-cookie header
     """
     if name.startswith(b'__Secure-') or name.startswith(b'__Host-') and not secure:
         raise RuntimeError(
@@ -147,10 +150,11 @@ def decode_set_cookie(set_cookie: bytes) -> Mapping[str, Any]:
     The `expires` value is represented as a `datetine.datetime`.
     The `secure` value is represented as a `bool`.
 
-    :param set_cookie: The set-cookie header
-    :type set_cookie: bytes
-    :return: A dictionary of the values
-    :rtype: Mapping[str, Any]
+    Args:
+        set_cookie (bytes): The set-cookie header
+
+    Returns:
+        Mapping[str, Any]: A dictionary of the values
     """
     i = iter(set_cookie.split(b';'))
     key, value = next(i).split(b'=', maxsplit=2)
@@ -176,21 +180,27 @@ def decode_set_cookie(set_cookie: bytes) -> Mapping[str, Any]:
 def encode_cookies(cookies: Mapping[bytes, List[bytes]]) -> bytes:
     """Encode the cookie header
 
-    :param cookies: The cookies
-    :type cookies: Mapping[bytes, List[bytes]]
-    :return: The cookie header
-    :rtype: bytes
+    Args:
+        cookies (Mapping[bytes, List[bytes]]): The cookies
+
+    Returns:
+        bytes: The cookie header
     """
-    return b'; '.join(name + b'=' + value for name, values in cookies.items() for value in values)
+    return b'; '.join(
+        name + b'=' + value
+        for name, values in cookies.items()
+        for value in values
+    )
 
 
 def decode_cookies(cookies: bytes) -> Mapping[bytes, List[bytes]]:
     """Decode a cookie header
 
-    :param cookies: The header
-    :type cookies: bytes
-    :return: The cookies
-    :rtype: Mapping[bytes, List[bytes]]
+    Args:
+        cookies (bytes): The header
+
+    Returns:
+        Mapping[bytes, List[bytes]]: The cookies
     """
     result: MutableMapping[bytes, List[bytes]] = dict()
     for morsel in cookies.rstrip(b'; ').split(b'; '):
@@ -210,7 +220,24 @@ def make_cookie(
         http_only: bool = False,
         same_site: Optional[bytes] = None
 ) -> bytes:
-    """Make a set-cookie header"""
+    """Make a set-cookie header
+
+    Args:
+        key (bytes): The cookie name
+        value (bytes): The cookie value
+        expires (Optional[Union[datetime, timedelta]], optional): The expiry
+            time of the cookie. Defaults to None.
+        path (Optional[bytes], optional): The cookie path. Defaults to None.
+        domain (Optional[bytes], optional): The cookie domain. Defaults to None.
+        secure (bool, optional): Indicates if the cookie is restricted to https.
+            Defaults to False.
+        http_only (bool, optional): Indicates if the cookie is available to the
+            API. Defaults to False.
+        same_site (Optional[bytes], optional): CORS directive. Defaults to None.
+
+    Returns:
+        bytes: The set-cookie header
+    """
     return encode_set_cookie(
         key,
         value,
@@ -225,5 +252,13 @@ def make_cookie(
 
 
 def make_expired_cookie(key: bytes, path: bytes = b'/') -> bytes:
-    """Make an expired cookie"""
+    """Make an expired cookie
+
+    Args:
+        key (bytes): The cookie name
+        path (bytes, optional): The cookie path. Defaults to b'/'.
+
+    Returns:
+        bytes: [description]
+    """
     return make_cookie(key, b'', expires=timedelta(seconds=0), path=path)

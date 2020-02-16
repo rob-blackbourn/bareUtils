@@ -1,25 +1,31 @@
 {
-    "editor.formatOnSave": true,
-    "python.pythonPath": ".venv/bin/python",
-    "python.linting.pylintUseMinimalCheckers": false,
-    "python.linting.pylintEnabled": true,
-    "python.linting.mypyEnabled": true,
-    "cSpell.words": [
-      "PHPSESSID",
-      "Rpbjpvc",
-      "WBITS",
-      "afes",
-      "bareasgi",
-      "ffwef",
-      "fghij",
-      "isdst",
-      "klmno",
-      "mday",
-      "sessionid",
-      "wday",
-      "yday"
-    ],
-    "python.testing.unittestEnabled": false,
-    "python.testing.nosetestsEnabled": false,
-    "python.testing.pytestEnabled": true
+  "editor.rulers": [
+    80,
+    120
+  ],
+  "editor.formatOnSave": true,
+  "python.pythonPath": ".venv/bin/python",
+  "python.linting.pylintUseMinimalCheckers": false,
+  "python.linting.pylintEnabled": true,
+  "python.linting.mypyEnabled": true,
+  "cSpell.words": [
+    "CORS",
+    "PHPSESSID",
+    "Rpbjpvc",
+    "WBITS",
+    "afes",
+    "bareasgi",
+    "ffwef",
+    "fghij",
+    "isdst",
+    "klmno",
+    "mday",
+    "sessionid",
+    "tzinfo",
+    "wday",
+    "yday"
+  ],
+  "python.testing.unittestEnabled": false,
+  "python.testing.nosetestsEnabled": false,
+  "python.testing.pytestEnabled": true
 }
