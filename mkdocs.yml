@@ -1,0 +1,44 @@
+site_name: bareUtils
+site_description: Utilities for the bareASGI and bareClient projects
+site_dir: docs
+
+docs_dir: documentation
+
+repo_name: rob-blackbourn/bareUtils
+repo_url: https://github.com/rob-blackbourn/bareUtils
+edit_uri: ""
+
+theme:
+    name: "material"
+    logo: images/peach.svg
+    favicon: images/favicon.ico
+
+nav:
+    - index.md
+    - API:
+          - bareutils.cookies: api/bareutils.cookies.md
+          - bareutils.header: api/bareutils.header.md
+          - bareutils.response_code: api/bareutils.response_code.md
+          - bareutils.responses: api/bareutils.responses.md
+          - bareutils.streaming: api/bareutils.streaming.md
+          - bareutils.unpacking: api/bareutils.unpacking.md
+          - bareutils.compression.middleware: api/bareutils.compression.middleware.md
+          - bareutils.compression.streaming: api/bareutils.compression.streaming.md
+
+markdown_extensions:
+    - admonition
+    - codehilite:
+          guess_lang: false
+    - jetblack_markdown.autodoc:
+          class_from_init: true
+          ignore_dunder: true
+          ignore_private: true
+          ignore_all: false
+          ignore_inherited: false
+          follow_module_tree: false
+          prefer_docstring: true
+    - toc:
+          permalink: true
+
+extra_css:
+    - css/custom.css

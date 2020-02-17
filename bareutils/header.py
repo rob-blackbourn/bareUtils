@@ -1,4 +1,7 @@
-"""Header utilities"""
+"""Header utilities
+
+A collection of functions to extract headers from the ASGI scope.
+"""
 
 import collections
 from datetime import datetime
@@ -210,7 +213,7 @@ def accept(
         add_wildcard: bool = False,
         default: Optional[Mapping[bytes, Tuple[bytes, Any]]] = None
 ) -> Optional[Mapping[bytes, Tuple[bytes, Any]]]:
-    """Returns the accept header it it exists.
+    """Returns the accept header if it exists.
 
     Where quality is not given it defaults to 1.0.
 
