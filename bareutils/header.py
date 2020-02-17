@@ -309,12 +309,13 @@ def accept_charset(
         add_wildcard: bool = False,
         default: Optional[Mapping[bytes, float]] = None
 ) -> Optional[Mapping[bytes, float]]:
-    """Extracts the accept encoding header if it exists into a mapping of the encoding
-    and the quality value which defaults to 1.0 if missing.
+    """Extracts the accept encoding header if it exists into a mapping of the
+    encoding and the quality value which defaults to 1.0 if missing.
 
     Args:
         headers (Headers): The headers
-        add_wildcard (bool, optional): If True ensures the '*' charset is included. Defaults to False.
+        add_wildcard (bool, optional): If True ensures the '*' charset is
+            included. Defaults to False.
         default (Optional[Mapping[bytes, float]], optional): An optional
             default. Defaults to None.
 
@@ -322,7 +323,10 @@ def accept_charset(
         Optional[Mapping[bytes, float]]: A mapping of the encodings and qualities.
     """
     value = find(b'accept-charset', headers)
-    return default if value is None else _parse_accept_charset(value, add_wildcard=add_wildcard)
+    return default if value is None else _parse_accept_charset(
+        value,
+        add_wildcard=add_wildcard
+    )
 
 # Accept-Encoding
 
@@ -353,7 +357,7 @@ def accept_encoding(
 
     Args:
         headers (Headers): The headers to search.
-        add_identity (bool, optional): If True ensures the 'identity' encoding 
+        add_identity (bool, optional): If True ensures the 'identity' encoding
             is included.. Defaults to False.
         default (Optional[Mapping[bytes, float]], optional): An optional
             default. Defaults to None.
@@ -1479,7 +1483,7 @@ def last_modified(
             value.
     """
     value = find(b'last-modified', headers)
-    return None if value is None else _parse_date(value)
+    return default if value is None else _parse_date(value)
 
 
 # Location
