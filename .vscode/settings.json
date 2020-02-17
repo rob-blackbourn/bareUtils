@@ -25,6 +25,7 @@
     "isdst",
     "klmno",
     "mday",
+    "mkdocs",
     "sessionid",
     "tzinfo",
     "wday",
