@@ -16,8 +16,12 @@ from baretypes import ParseError
 
 # pylint: disable=line-too-long
 # Date: <day-name>, <day> <month> <year> <hour>:<minute>:<second> GMT
-DATE_PATTERN = re.compile(
+DATE_PATTERN_RFC7231 = re.compile(
     r'^(Mon|Tue|Wed|Thu|Fri|Sat|Sun), (\d{2}) (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) (\d{4}) (\d{2}):(\d{2}):(\d{2}) GMT$'
+)
+# 'Mon, 23-Mar-20 07:36:36 GMT'
+DATE_PATTERN_RFC850 = re.compile(
+    r'^(Mon|Tue|Wed|Thu|Fri|Sat|Sun), (\d{2})-(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-(\d{2}) (\d{2}):(\d{2}):(\d{2}) GMT$'
 )
 DAY_NAMES = ("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
 MONTH_NAMES = ("Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -36,20 +40,35 @@ def parse_date(value: str) -> datetime:
     Returns:
         datetime: The parsed datetime
     """
-    matches = DATE_PATTERN.match(value)
-    if matches is None:
-        raise ParseError("Failed to parse date")
-    _day_of_week, day, month, year, hour, minute, second = matches.groups()
-    result = datetime(
-        int(year),
-        1 + MONTH_NAMES.index(month),
-        int(day),
-        int(hour),
-        int(minute),
-        int(second),
-        tzinfo=timezone.utc
-    )
-    return result
+    matches = DATE_PATTERN_RFC7231.match(value)
+    if matches:
+        _day_of_week, day, month, year, hour, minute, second = matches.groups()
+        result = datetime(
+            int(year),
+            1 + MONTH_NAMES.index(month),
+            int(day),
+            int(hour),
+            int(minute),
+            int(second),
+            tzinfo=timezone.utc
+        )
+        return result
+
+    matches = DATE_PATTERN_RFC850.match(value)
+    if matches:
+        _day_of_week, day, month, year, hour, minute, second = matches.groups()
+        result = datetime(
+            2000 + int(year),
+            1 + MONTH_NAMES.index(month),
+            int(day),
+            int(hour),
+            int(minute),
+            int(second),
+            tzinfo=timezone.utc
+        )
+        return result
+
+    raise ParseError("Failed to parse date")
 
 
 def format_date(value: datetime) -> str:
