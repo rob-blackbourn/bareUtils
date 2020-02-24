@@ -112,18 +112,24 @@ def _parse_date(value: bytes) -> datetime:
     return datetime.strptime(value.decode(), '%a, %d %b %Y %H:%M:%S %Z')
 
 
-def find_date(name: bytes, headers: Headers) -> Optional[datetime]:
+def find_date(
+        name: bytes,
+        headers: Headers,
+        *,
+        default: Optional[datetime] = None
+) -> Optional[datetime]:
     """Find a header containing a date.
 
     Args:
         name (bytes): The name of the header.
         headers (Headers): The headers.
+        default (Optional[datetime], optional): The headers, Defaults to None.
 
     Returns:
-        Optional[datetime]: The date if found, otherwise None.
+        Optional[datetime]: The date if found, otherwise the default value.
     """
     value = find(name, headers)
-    return _parse_date(value) if value else None
+    return default if not value else _parse_date(value)
 
 
 def _parse_comma_separated_list(value: bytes) -> List[bytes]:
@@ -1244,8 +1250,7 @@ def date(
     Returns:
         Optional[datetime]: The date and time at which the message was originated
     """
-    value = find(b'date', headers)
-    return default if value is None else _parse_date(value)
+    return find_date(b'date', headers, default=default)
 
 # DNT
 
@@ -1372,8 +1377,7 @@ def expires(
         Optional[datetime]: The date/time after which the response is considered
             stale, or the default value.
     """
-    value = find(b'expires', headers)
-    return default if value is None else _parse_date(value)
+    return find_date(b'expires', headers, default=default)
 
 # From
 
@@ -1436,8 +1440,7 @@ def if_modified_since(
         Optional[datetime]: The timestamp if present, otherwise the default
             value.
     """
-    value = find(b'if-modified-since', headers)
-    return default if value is None else _parse_date(value)
+    return find_date(b'if-modified-since', headers, default=default)
 
 # Last-Modified
 
@@ -1466,8 +1469,7 @@ def last_modified(
         Optional[datetime]: The timestamp if present, otherwise the default
             value.
     """
-    value = find(b'last-modified', headers)
-    return default if value is None else _parse_date(value)
+    return find_date(b'last-modified', headers, default=default)
 
 
 # Location
