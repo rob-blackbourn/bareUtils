@@ -1,7 +1,6 @@
 """Cookies"""
 
-from datetime import datetime, timedelta, timezone
-import re
+from datetime import datetime, timedelta
 from typing import (
     Any,
     Dict,
@@ -12,84 +11,8 @@ from typing import (
     Union
 )
 
-from baretypes import ParseError
-
-# pylint: disable=line-too-long
-# Date: <day-name>, <day> <month> <year> <hour>:<minute>:<second> GMT
-DATE_PATTERN_RFC7231 = re.compile(
-    r'^(Mon|Tue|Wed|Thu|Fri|Sat|Sun), (\d{2}) (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) (\d{4}) (\d{2}):(\d{2}):(\d{2}) GMT$'
-)
-# 'Mon, 23-Mar-20 07:36:36 GMT'
-DATE_PATTERN_RFC850 = re.compile(
-    r'^(Mon|Tue|Wed|Thu|Fri|Sat|Sun), (\d{2})-(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-(\d{2}) (\d{2}):(\d{2}):(\d{2}) GMT$'
-)
-DAY_NAMES = ("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
-MONTH_NAMES = ("Jan", "Feb", "Mar", "Apr", "May", "Jun",
-               "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
-
-
-def parse_date(value: str) -> datetime:
-    """Parse a date according to RFC 7231, section 7.1.1.2: Date
-
-    Args:
-        value (str): The string to parse
-
-    Raises:
-        ParseError: If the string cannot be parsed to a date
-
-    Returns:
-        datetime: The parsed datetime
-    """
-    matches = DATE_PATTERN_RFC7231.match(value)
-    if matches:
-        _day_of_week, day, month, year, hour, minute, second = matches.groups()
-        result = datetime(
-            int(year),
-            1 + MONTH_NAMES.index(month),
-            int(day),
-            int(hour),
-            int(minute),
-            int(second),
-            tzinfo=timezone.utc
-        )
-        return result
-
-    matches = DATE_PATTERN_RFC850.match(value)
-    if matches:
-        _day_of_week, day, month, year, hour, minute, second = matches.groups()
-        result = datetime(
-            2000 + int(year),
-            1 + MONTH_NAMES.index(month),
-            int(day),
-            int(hour),
-            int(minute),
-            int(second),
-            tzinfo=timezone.utc
-        )
-        return result
-
-    raise ParseError("Failed to parse date")
-
-
-def format_date(value: datetime) -> str:
-    """Format a date according to RFC 7231, section 7.1.1.2: Date
-
-    Args:
-        value (datetime): The datetime to format
-
-    Returns:
-        str: The formatted datetime
-    """
-    time_tuple = value.utctimetuple()
-    return "{day}, {mday:02d} {mon} {year:04d} {hour:02d}:{min:02d}:{sec:02d} GMT".format(
-        day=DAY_NAMES[time_tuple.tm_wday],
-        mday=time_tuple.tm_mday,
-        mon=MONTH_NAMES[time_tuple.tm_mon - 1],
-        year=time_tuple.tm_year,
-        hour=time_tuple.tm_hour,
-        min=time_tuple.tm_min,
-        sec=time_tuple.tm_sec
-    )
+from .dates import parse_date
+from .dates.rfc_7231 import format_date
 
 
 def encode_set_cookie(
@@ -123,6 +46,7 @@ def encode_set_cookie(
 
     Raises:
         RuntimeError: Raised if the __Secure- or __Host- was used without secure
+        ValueError: If a date could not be parsed.
 
     Returns:
         bytes: The set-cookie header

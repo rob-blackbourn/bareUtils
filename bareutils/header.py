@@ -7,8 +7,11 @@ import collections
 from datetime import datetime
 from enum import Enum, auto
 from typing import List, Optional, Mapping, MutableMapping, Any, Tuple, Callable, NamedTuple
+
 from baretypes import Headers
+
 from .cookies import decode_cookies, decode_set_cookie
+from .dates.rfc_7231 import parse_date
 
 
 class _MergeType(Enum):
@@ -109,7 +112,7 @@ def to_dict(headers: Headers) -> MutableMapping[bytes, List[bytes]]:
 
 
 def _parse_date(value: bytes) -> datetime:
-    return datetime.strptime(value.decode(), '%a, %d %b %Y %H:%M:%S %Z')
+    return parse_date(value.decode())
 
 
 def find_date(
