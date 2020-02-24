@@ -108,6 +108,10 @@ def to_dict(headers: Headers) -> MutableMapping[bytes, List[bytes]]:
     return items
 
 
+def _parse_date(value: bytes) -> datetime:
+    return datetime.strptime(value.decode(), '%a, %d %b %Y %H:%M:%S %Z')
+
+
 def find_date(name: bytes, headers: Headers) -> Optional[datetime]:
     """Find a header containing a date.
 
@@ -119,7 +123,7 @@ def find_date(name: bytes, headers: Headers) -> Optional[datetime]:
         Optional[datetime]: The date if found, otherwise None.
     """
     value = find(name, headers)
-    return datetime.strptime(value.decode(), '%a, %d %b %Y %H:%M:%S %Z') if value else None
+    return _parse_date(value) if value else None
 
 
 def _parse_comma_separated_list(value: bytes) -> List[bytes]:
@@ -134,22 +138,7 @@ def _parse_float(value: bytes) -> float:
     return float(value)
 
 
-def _parse_date(value: bytes) -> datetime:
-    return datetime.strptime(value.decode(), '%a, %d %b %Y %H:%M:%S %Z')
-
-
-def parse_quality(value: bytes) -> Optional[float]:
-    """Parse a quality attribute of the form 'q=0.5'
-
-    Args:
-        value (bytes): The attribute value
-
-    Raises:
-        ValueError: If there was a 'q' qualifier, but no value.
-
-    Returns:
-        Optional[float]: The value as a float or None if there was no value.
-    """
+def _parse_quality(value: bytes) -> Optional[float]:
     if value == b'':
         return None
     name, quality = value.split(b'=')
@@ -158,15 +147,7 @@ def parse_quality(value: bytes) -> Optional[float]:
     return float(quality)
 
 
-def parse_accept_quality(value: bytes) -> Tuple[bytes, Any]:
-    """Parse a quality attribute of the form 'q=0.5'
-
-    Args:
-        value (bytes): The attribute value
-
-    Returns:
-        Tuple[bytes, Any]: The value as a float or None if there was no value.
-    """
+def _parse_accept_quality(value: bytes) -> Tuple[bytes, Any]:
     if value == b'':
         return b'q', 1.0
     name, quality = value.split(b'=')
@@ -194,7 +175,7 @@ def _parse_accept(
         add_wildcard: bool = False
 ) -> Mapping[bytes, Tuple[bytes, Any]]:
     values = {
-        first: parse_accept_quality(rest)
+        first: _parse_accept_quality(rest)
         for first, sep, rest in [x.strip().partition(b';') for x in value.split(b',')]
     }
 
@@ -293,7 +274,7 @@ def accept_ch_lifetime(
 
 def _parse_accept_charset(value: bytes, *, add_wildcard: bool = False) -> Mapping[bytes, float]:
     charsets = {
-        first: parse_quality(rest) or 1.0
+        first: _parse_quality(rest) or 1.0
         for first, sep, rest in [x.partition(b';') for x in value.split(b', ')]
     }
 
@@ -336,7 +317,7 @@ def accept_charset(
 
 def _parse_accept_encoding(value: bytes, *, add_identity: bool = False) -> Mapping[bytes, float]:
     encodings = {
-        first: parse_quality(rest) or 1.0
+        first: _parse_quality(rest) or 1.0
         for first, sep, rest in [x.partition(b';') for x in value.split(b', ')]
     }
 
@@ -376,7 +357,7 @@ def accept_encoding(
 
 def _parse_accept_language(value: bytes, *, add_wildcard: bool = False) -> Mapping[bytes, float]:
     languages = {
-        first: parse_quality(rest) or 1.0
+        first: _parse_quality(rest) or 1.0
         for first, sep, rest in [x.partition(b';') for x in value.split(b', ')]
     }
 

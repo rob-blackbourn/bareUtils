@@ -68,17 +68,20 @@ def test_accept():
         b'application/signed-exchange': (b'v', b'b3')
     }
 
+
 def test_accept_ch():
     """Test accept_ch"""
     assert header.accept_ch([
         (b'accept-ch', b'DPR, Viewport-Width')
     ]) == [b'DPR', b'Viewport-Width']
 
+
 def test_accept_ch_lifetime():
     """Test for accept_ch_lifetime"""
     assert header.accept_ch_lifetime([
         (b'accept-ch-lifetime', b'86400')
     ]) == 86400
+
 
 def test_accept_charset():
     """Test accept_charset"""
@@ -199,11 +202,13 @@ def test_access_control_allow_methods():
         b'OPTIONS'
     ]
 
+
 def test_authorization():
     """Test authorization"""
     assert header.authorization(
         [(b'authorization', b'Basic YWxhZGRpbjpvcGVuc2VzYW1l')]
     ) == (b'Basic', b'YWxhZGRpbjpvcGVuc2VzYW1l')
+
 
 def test_content_length():
     """Test content_length"""
@@ -347,6 +352,7 @@ def test_content_range():
         (b'content-range', b'bytes */67589')
     ]) == (b'bytes', None, 67589)
 
+
 def test_content_security_policy():
     """Test content_security_policy"""
     assert header.content_security_policy([
@@ -359,11 +365,13 @@ def test_content_security_policy():
         (b'connect-src', [b"'none'"])
     ]
 
+
 def test_cross_origin_resource_policy():
     """Test cross_origin_resource_policy"""
     assert header.cross_origin_resource_policy([
         (b'cross-origin-resource-policy', b'same-site')
     ]) == b'same-site'
+
 
 def test_date():
     """Test date"""
@@ -371,11 +379,13 @@ def test_date():
         (b'date', b'Wed, 21 Oct 2015 07:28:00 GMT')
     ]) == datetime(2015, 10, 21, 7, 28)
 
+
 def test_dnt():
     """Test for dnt"""
     assert header.dnt([
         (b'DNT', b'1')
     ]) == 1
+
 
 def test_dpr():
     """Test dpr"""
@@ -383,11 +393,13 @@ def test_dpr():
         (b'DPR', b'1.0')
     ]) == 1.0
 
+
 def test_device_memory():
     """Test device_memory"""
     assert header.device_memory([
         (b'device-memory', b'0.5')
     ]) == 0.5
+
 
 def test_expect():
     """Test expect"""
@@ -395,11 +407,13 @@ def test_expect():
         (b'expect', b'100-continue')
     ]) == b'100-continue'
 
+
 def test_expires():
     """Test expires"""
     assert header.expires([
         (b'expires', b'Wed, 21 Oct 2015 07:28:00 GMT')
     ]) == datetime(2015, 10, 21, 7, 28)
+
 
 def test_host():
     """Test host"""
@@ -410,11 +424,13 @@ def test_host():
         (b'host', b'localhost:8080')
     ]) == (b'localhost', 8080)
 
+
 def test_location():
     """Test location"""
     assert header.location([
         (b'location', b'/index.html')
     ]) == b'/index.html'
+
 
 def test_origin():
     """Test origin"""
@@ -422,17 +438,20 @@ def test_origin():
         (b'origin', b'https://developer.mozilla.org')
     ]) == b'https://developer.mozilla.org'
 
+
 def test_referer():
     """Test referer"""
     assert header.referer([
         (b'referer', b'https://developer.mozilla.org/en-US/docs/Web/JavaScript')
     ]) == b'https://developer.mozilla.org/en-US/docs/Web/JavaScript'
 
+
 def test_server():
     """Test server"""
     assert header.server([
         (b'server', b'Apache/2.4.1 (Unix)')
     ]) == b'Apache/2.4.1 (Unix)'
+
 
 def test_vary():
     """Test vary"""
@@ -563,10 +582,10 @@ def test_collect():
             b'*': 0.5,
         },
         b'accept': {
-            b'text/html': 1.0,
-            b'application/xhtml+xml': 1.0,
-            b'application/xml': 0.9,
-            b'*/*': 0.8
+            b'text/html': (b'q', 1.0),
+            b'application/xhtml+xml': (b'q', 1.0),
+            b'application/xml': (b'q', 0.9),
+            b'*/*': (b'q', 0.8)
         },
         b'authorization': (b'Basic', b'YWxhZGRpbjpvcGVuc2VzYW1l'),
         b'host': (b'developer.cdn.mozilla.net', None),
