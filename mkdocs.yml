@@ -15,6 +15,15 @@ theme:
 
 nav:
     - index.md
+    - User Guide:
+          - user-guide/getting-started.md
+          - user-guide/installation.md
+          - user-guide/headers.md
+          - user-guide/response-codes.md
+          - user-guide/cookies.md
+          - user-guide/streaming-content.md
+          - user-guide/compression.md
+          - user-guide/unpacking.md
     - API:
           - bareutils.cookies: api/bareutils.cookies.md
           - bareutils.header: api/bareutils.header.md
