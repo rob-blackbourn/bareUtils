@@ -507,6 +507,26 @@
 <p>The bareUtils module <code>bareutils.cookies</code> provides constants and helper
 functions for dealing with cookies.</p>
 <p>More information can be found in the <a href="/api/bareutils.cookies/">api</a>.</p>
+<h1 id="setting-cookies">Setting cookies<a class="headerlink" href="#setting-cookies" title="Permanent link">&para;</a></h1>
+<p>A <code>set-cookie</code> header value can be created with <code>encode_set_cookie</code>.</p>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">timedelta</span>
+<span class="kn">from</span> <span class="nn">bareutils.cookies</span> <span class="kn">import</span> <span class="n">encode_set_cookie</span>
+
+<span class="n">set_cookie</span> <span class="o">=</span> <span class="n">bareutils</span><span class="o">.</span><span class="n">cookies</span><span class="o">.</span><span class="n">encode_set_cookie</span><span class="p">(</span>
+    <span class="sa">b</span><span class="s1">&#39;mycookie&#39;</span><span class="p">,</span>
+    <span class="sa">b</span><span class="s1">&#39;98745hjk988588&#39;</span><span class="p">,</span>
+    <span class="n">max_age</span> <span class="o">=</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="p">)</span>
+<span class="n">headers</span> <span class="o">=</span> <span class="p">[(</span><span class="sa">b</span><span class="s1">&#39;set-cookie&#39;</span><span class="p">,</span> <span class="n">set_cookie</span><span class="p">)]</span>
+</code></pre></div>
+
+
+<p>The <code>decode_set_cookie</code> function decodes the <code>set-cookie</code> header value and
+returns a dictionary containing the set-cookie parameters.</p>
+<h1 id="retrieving-cookies">Retrieving cookies<a class="headerlink" href="#retrieving-cookies" title="Permanent link">&para;</a></h1>
+<p>The <code>decode_cookies</code> function takes the <code>cookie</code> header value and returns a
+mapping of cookie names to a list of values. This must be a list as cookie names
+are not guaranteed to be unique. The <code>encode_cookies</code> function does the reverse.</p>
                 
                   
                 

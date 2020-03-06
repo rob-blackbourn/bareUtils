@@ -781,13 +781,13 @@
   <a class="headerlink" href="#module-bareutilsresponses" title="Permanent link">&para;</a></h3>
 <h4 class="autodoc-title" id="summary">Summary<a class="headerlink" href="#summary" title="Permanent link">&para;</a></h4>
 <p>Responses</p>
-<div class="autodoc-attributes">
-
-</div>
 <div class="autodoc-description">
 
 </div>
 <div class="autodoc-examples">
+
+</div>
+<div class="autodoc-attributes">
 
 </div>
 <div class="autodoc-callable">
@@ -796,6 +796,9 @@
 <a class="headerlink" href="#function-bareutilsbytes_response" title="Permanent link">&para;</a></h3>
 <h4 class="autodoc-title" id="summary_1">Summary<a class="headerlink" href="#summary_1" title="Permanent link">&para;</a></h4>
 <p>A helper function to create a bytes response.</p>
+<div class="autodoc-description">
+
+</div>
 <div class="autodoc-signature"><span class="autodoc-qualifier">bareutils</span><span class="autodoc-punctuation">.</span><var class="autodoc-varname">bytes_response</var><span class="autodoc-punctuation">(</span><br />
 <div class="autodoc-argument">
         <var class="autodoc-varname">status</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">int</span><span class="autodoc-punctuation">,</span></div>
@@ -813,14 +816,14 @@
 <br />
 <div class="autodoc-parameters">
 <h4 class="autodoc-title" id="parameters">Parameters<a class="headerlink" href="#parameters" title="Permanent link">&para;</a></h4>
-<var class="autodoc-varname">status</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">int</span><span class="autodoc-punctuation"> (optional)</span><p>The HTTP status code.</p>
-<var class="autodoc-varname">headers</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[Headers]</span><span class="autodoc-punctuation"> (optional)</span><p>The HTTP headers.</p>
-<var class="autodoc-varname">buf</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">bytes</span><span class="autodoc-punctuation"> (optional)</span><p>The data to send.</p>
-<var class="autodoc-varname">content_type</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">bytes</span><p>The content type of the data. Defaults
+<var class="autodoc-varname">status</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">int</span><p>The HTTP status code.</p>
+<var class="autodoc-varname">headers</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[Headers]</span><p>The HTTP headers.</p>
+<var class="autodoc-varname">buf</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">bytes</span><p>The data to send.</p>
+<var class="autodoc-varname">content_type</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">bytes</span><span class="autodoc-punctuation"> (optional)</span><p>The content type of the data. Defaults
 to b'application/octet-stream'.</p>
-<var class="autodoc-varname">chunk_size</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">int</span><p>The size of each chunk to send or -1 to send
+<var class="autodoc-varname">chunk_size</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">int</span><span class="autodoc-punctuation"> (optional)</span><p>The size of each chunk to send or -1 to send
 as a single chunk. Defaults to -1.</p>
-<var class="autodoc-varname">pushes</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[PushResponses]</span><p>Optional posh responses for
+<var class="autodoc-varname">pushes</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[PushResponses]</span><span class="autodoc-punctuation"> (optional)</span><p>Optional posh responses for
 HTTP/2. Defaults to None.</p>
 </div>
 <div class="autodoc-returns">
@@ -829,9 +832,6 @@ HTTP/2. Defaults to None.</p>
 <span class="autodoc-summary">The HTTP response.</span>
 </div>
 <div class="autodoc-raises">
-
-</div>
-<div class="autodoc-description">
 
 </div>
 <div class="autodoc-examples">
@@ -845,6 +845,9 @@ HTTP/2. Defaults to None.</p>
 <a class="headerlink" href="#function-bareutilsjson_response" title="Permanent link">&para;</a></h3>
 <h4 class="autodoc-title" id="summary_2">Summary<a class="headerlink" href="#summary_2" title="Permanent link">&para;</a></h4>
 <p>A helper function to send a json response.</p>
+<div class="autodoc-description">
+
+</div>
 <div class="autodoc-signature"><span class="autodoc-qualifier">bareutils</span><span class="autodoc-punctuation">.</span><var class="autodoc-varname">json_response</var><span class="autodoc-punctuation">(</span><br />
 <div class="autodoc-argument">
         <var class="autodoc-varname">status</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">int</span><span class="autodoc-punctuation">,</span></div>
@@ -855,7 +858,7 @@ HTTP/2. Defaults to None.</p>
 <div class="autodoc-argument">
         <var class="autodoc-varname">content_type</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">bytes</span><span class="autodoc-punctuation">,</span></div>
 <div class="autodoc-argument">
-        <var class="autodoc-varname">dumps</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Callable[[Any]</span><span class="autodoc-punctuation">,</span></div>
+        <var class="autodoc-varname">dumps</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Callable[[Any], str]</span><span class="autodoc-punctuation">,</span></div>
 <div class="autodoc-argument">
         <var class="autodoc-varname">chunk_size</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">int</span><span class="autodoc-punctuation">,</span></div>
 <div class="autodoc-argument">
@@ -864,16 +867,16 @@ HTTP/2. Defaults to None.</p>
 <br />
 <div class="autodoc-parameters">
 <h4 class="autodoc-title" id="parameters_1">Parameters<a class="headerlink" href="#parameters_1" title="Permanent link">&para;</a></h4>
-<var class="autodoc-varname">status</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">int</span><span class="autodoc-punctuation"> (optional)</span><p>The HTTP status code.</p>
-<var class="autodoc-varname">headers</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[Headers]</span><span class="autodoc-punctuation"> (optional)</span><p>The HTTP headers.</p>
-<var class="autodoc-varname">obj</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Any</span><span class="autodoc-punctuation"> (optional)</span><p>The object to send as JSON.</p>
-<var class="autodoc-varname">content_type</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">bytes</span><p>The content type. Defaults to
+<var class="autodoc-varname">status</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">int</span><p>The HTTP status code.</p>
+<var class="autodoc-varname">headers</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[Headers]</span><p>The HTTP headers.</p>
+<var class="autodoc-varname">obj</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Any</span><p>The object to send as JSON.</p>
+<var class="autodoc-varname">content_type</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">bytes</span><span class="autodoc-punctuation"> (optional)</span><p>The content type. Defaults to
 b'application/json'.</p>
-<var class="autodoc-varname">dumps</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Callable[[Any]</span><p>The function to use to turn the
+<var class="autodoc-varname">dumps</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Callable[[Any], str]</span><span class="autodoc-punctuation"> (optional)</span><p>The function to use to turn the
 object into JSON. Defaults to json.dumps.</p>
-<var class="autodoc-varname">chunk_size</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">int</span><p>The size of each chunk to send or -1 to send
+<var class="autodoc-varname">chunk_size</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">int</span><span class="autodoc-punctuation"> (optional)</span><p>The size of each chunk to send or -1 to send
 as a single chunk. Defaults to -1.</p>
-<var class="autodoc-varname">pushes</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[PushResponses]</span><p>Optional posh responses for
+<var class="autodoc-varname">pushes</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[PushResponses]</span><span class="autodoc-punctuation"> (optional)</span><p>Optional posh responses for
 HTTP/2. Defaults to None.</p>
 </div>
 <div class="autodoc-returns">
@@ -882,9 +885,6 @@ HTTP/2. Defaults to None.</p>
 <span class="autodoc-summary">The HTTP response.</span>
 </div>
 <div class="autodoc-raises">
-
-</div>
-<div class="autodoc-description">
 
 </div>
 <div class="autodoc-examples">
@@ -898,6 +898,9 @@ HTTP/2. Defaults to None.</p>
 <a class="headerlink" href="#function-bareutilstext_response" title="Permanent link">&para;</a></h3>
 <h4 class="autodoc-title" id="summary_3">Summary<a class="headerlink" href="#summary_3" title="Permanent link">&para;</a></h4>
 <p>A helper function to create a text response.</p>
+<div class="autodoc-description">
+
+</div>
 <div class="autodoc-signature"><span class="autodoc-qualifier">bareutils</span><span class="autodoc-punctuation">.</span><var class="autodoc-varname">text_response</var><span class="autodoc-punctuation">(</span><br />
 <div class="autodoc-argument">
         <var class="autodoc-varname">status</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">int</span><span class="autodoc-punctuation">,</span></div>
@@ -917,14 +920,14 @@ HTTP/2. Defaults to None.</p>
 <br />
 <div class="autodoc-parameters">
 <h4 class="autodoc-title" id="parameters_2">Parameters<a class="headerlink" href="#parameters_2" title="Permanent link">&para;</a></h4>
-<var class="autodoc-varname">status</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">int</span><span class="autodoc-punctuation"> (optional)</span><p>The HTTP status code.</p>
-<var class="autodoc-varname">headers</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[Headers]</span><span class="autodoc-punctuation"> (optional)</span><p>The HTTP headers.</p>
-<var class="autodoc-varname">text</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><span class="autodoc-punctuation"> (optional)</span><p>The text to send.</p>
-<var class="autodoc-varname">encoding</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><p>[description]. Defaults to 'utf-8'.</p>
-<var class="autodoc-varname">content_type</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">bytes</span><p>The content type. Defaults to b'text/plain'.</p>
-<var class="autodoc-varname">chunk_size</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">int</span><p>The size of each chunk to send or -1 to send
+<var class="autodoc-varname">status</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">int</span><p>The HTTP status code.</p>
+<var class="autodoc-varname">headers</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[Headers]</span><p>The HTTP headers.</p>
+<var class="autodoc-varname">text</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><p>The text to send.</p>
+<var class="autodoc-varname">encoding</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><span class="autodoc-punctuation"> (optional)</span><p>[description]. Defaults to 'utf-8'.</p>
+<var class="autodoc-varname">content_type</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">bytes</span><span class="autodoc-punctuation"> (optional)</span><p>The content type. Defaults to b'text/plain'.</p>
+<var class="autodoc-varname">chunk_size</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">int</span><span class="autodoc-punctuation"> (optional)</span><p>The size of each chunk to send or -1 to send
 as a single chunk. Defaults to -1.</p>
-<var class="autodoc-varname">pushes</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[PushResponses]</span><p>Optional posh responses for
+<var class="autodoc-varname">pushes</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[PushResponses]</span><span class="autodoc-punctuation"> (optional)</span><p>Optional posh responses for
 HTTP/2. Defaults to None.</p>
 </div>
 <div class="autodoc-returns">
@@ -933,9 +936,6 @@ HTTP/2. Defaults to None.</p>
 <span class="autodoc-summary">The HTTP response.</span>
 </div>
 <div class="autodoc-raises">
-
-</div>
-<div class="autodoc-description">
 
 </div>
 <div class="autodoc-examples">

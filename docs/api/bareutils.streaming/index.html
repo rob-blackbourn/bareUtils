@@ -849,13 +849,13 @@
   <a class="headerlink" href="#module-bareutilsstreaming" title="Permanent link">&para;</a></h3>
 <h4 class="autodoc-title" id="summary">Summary<a class="headerlink" href="#summary" title="Permanent link">&para;</a></h4>
 <p>Streaming</p>
-<div class="autodoc-attributes">
-
-</div>
 <div class="autodoc-description">
 
 </div>
 <div class="autodoc-examples">
+
+</div>
+<div class="autodoc-attributes">
 
 </div>
 <div class="autodoc-callable">
@@ -864,6 +864,9 @@
 <a class="headerlink" href="#async-function-bareutilsbytes_reader" title="Permanent link">&para;</a></h3>
 <h4 class="autodoc-title" id="summary_1">Summary<a class="headerlink" href="#summary_1" title="Permanent link">&para;</a></h4>
 <p>Extracts the body content as bytes.</p>
+<div class="autodoc-description">
+
+</div>
 <div class="autodoc-signature"><span class="autodoc-keyword">async</span><span> </span><span class="autodoc-qualifier">bareutils</span><span class="autodoc-punctuation">.</span><var class="autodoc-varname">bytes_reader</var><span class="autodoc-punctuation">(</span><br />
 <div class="autodoc-argument">
         <var class="autodoc-varname">content</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Content</span></div>
@@ -871,7 +874,7 @@
 <br />
 <div class="autodoc-parameters">
 <h4 class="autodoc-title" id="parameters">Parameters<a class="headerlink" href="#parameters" title="Permanent link">&para;</a></h4>
-<var class="autodoc-varname">content</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Content</span><span class="autodoc-punctuation"> (optional)</span><p>The content argument of the request handler.</p>
+<var class="autodoc-varname">content</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Content</span><p>The content argument of the request handler.</p>
 </div>
 <div class="autodoc-returns">
 <h4 class="autodoc-title" id="returns">Returns<a class="headerlink" href="#returns" title="Permanent link">&para;</a></h4>
@@ -879,9 +882,6 @@
 <span class="autodoc-summary">The body as bytes.</span>
 </div>
 <div class="autodoc-raises">
-
-</div>
-<div class="autodoc-description">
 
 </div>
 <div class="autodoc-examples">
@@ -895,6 +895,9 @@
 <a class="headerlink" href="#async-generator-function-bareutilsbytes_writer" title="Permanent link">&para;</a></h3>
 <h4 class="autodoc-title" id="summary_2">Summary<a class="headerlink" href="#summary_2" title="Permanent link">&para;</a></h4>
 <p>Creates an asynchronous iterator from the supplied response body.</p>
+<div class="autodoc-description">
+
+</div>
 <div class="autodoc-signature"><span class="autodoc-keyword">async</span><span> </span><span class="autodoc-qualifier">bareutils</span><span class="autodoc-punctuation">.</span><var class="autodoc-varname">bytes_writer</var><span class="autodoc-punctuation">(</span><br />
 <div class="autodoc-argument">
         <var class="autodoc-varname">buf</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">bytes</span><span class="autodoc-punctuation">,</span></div>
@@ -904,8 +907,8 @@
 <br />
 <div class="autodoc-parameters">
 <h4 class="autodoc-title" id="parameters_1">Parameters<a class="headerlink" href="#parameters_1" title="Permanent link">&para;</a></h4>
-<var class="autodoc-varname">buf</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">bytes</span><span class="autodoc-punctuation"> (optional)</span><p>The response body to return.</p>
-<var class="autodoc-varname">chunk_size</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">int</span><p>The size of each chunk to send or -1 to send
+<var class="autodoc-varname">buf</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">bytes</span><p>The response body to return.</p>
+<var class="autodoc-varname">chunk_size</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">int</span><span class="autodoc-punctuation"> (optional)</span><p>The size of each chunk to send or -1 to send
 as a single chunk.. Defaults to -1.</p>
 </div>
 <div class="autodoc-returns">
@@ -914,9 +917,6 @@ as a single chunk.. Defaults to -1.</p>
 <span class="autodoc-summary">The body bytes</span>
 </div>
 <div class="autodoc-raises">
-
-</div>
-<div class="autodoc-description">
 
 </div>
 <div class="autodoc-examples">
@@ -930,6 +930,9 @@ as a single chunk.. Defaults to -1.</p>
 <a class="headerlink" href="#async-function-bareutilstext_reader" title="Permanent link">&para;</a></h3>
 <h4 class="autodoc-title" id="summary_3">Summary<a class="headerlink" href="#summary_3" title="Permanent link">&para;</a></h4>
 <p>Extracts the body contents as text.</p>
+<div class="autodoc-description">
+
+</div>
 <div class="autodoc-signature"><span class="autodoc-keyword">async</span><span> </span><span class="autodoc-qualifier">bareutils</span><span class="autodoc-punctuation">.</span><var class="autodoc-varname">text_reader</var><span class="autodoc-punctuation">(</span><br />
 <div class="autodoc-argument">
         <var class="autodoc-varname">content</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Content</span><span class="autodoc-punctuation">,</span></div>
@@ -939,8 +942,8 @@ as a single chunk.. Defaults to -1.</p>
 <br />
 <div class="autodoc-parameters">
 <h4 class="autodoc-title" id="parameters_2">Parameters<a class="headerlink" href="#parameters_2" title="Permanent link">&para;</a></h4>
-<var class="autodoc-varname">content</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Content</span><span class="autodoc-punctuation"> (optional)</span><p>The content argument of the request handler.</p>
-<var class="autodoc-varname">encoding</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><p>The encoding of the text. Defaults to 'utf-8'.</p>
+<var class="autodoc-varname">content</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Content</span><p>The content argument of the request handler.</p>
+<var class="autodoc-varname">encoding</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><span class="autodoc-punctuation"> (optional)</span><p>The encoding of the text. Defaults to 'utf-8'.</p>
 </div>
 <div class="autodoc-returns">
 <h4 class="autodoc-title" id="returns_1">Returns<a class="headerlink" href="#returns_1" title="Permanent link">&para;</a></h4>
@@ -948,9 +951,6 @@ as a single chunk.. Defaults to -1.</p>
 <span class="autodoc-summary">The body contents as a string.</span>
 </div>
 <div class="autodoc-raises">
-
-</div>
-<div class="autodoc-description">
 
 </div>
 <div class="autodoc-examples">
@@ -964,6 +964,9 @@ as a single chunk.. Defaults to -1.</p>
 <a class="headerlink" href="#async-generator-function-bareutilstext_writer" title="Permanent link">&para;</a></h3>
 <h4 class="autodoc-title" id="summary_4">Summary<a class="headerlink" href="#summary_4" title="Permanent link">&para;</a></h4>
 <p>Creates an asynchronous iterator from the supplied response body.</p>
+<div class="autodoc-description">
+
+</div>
 <div class="autodoc-signature"><span class="autodoc-keyword">async</span><span> </span><span class="autodoc-qualifier">bareutils</span><span class="autodoc-punctuation">.</span><var class="autodoc-varname">text_writer</var><span class="autodoc-punctuation">(</span><br />
 <div class="autodoc-argument">
         <var class="autodoc-varname">text</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><span class="autodoc-punctuation">,</span></div>
@@ -975,10 +978,10 @@ as a single chunk.. Defaults to -1.</p>
 <br />
 <div class="autodoc-parameters">
 <h4 class="autodoc-title" id="parameters_3">Parameters<a class="headerlink" href="#parameters_3" title="Permanent link">&para;</a></h4>
-<var class="autodoc-varname">text</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><span class="autodoc-punctuation"> (optional)</span><p>The response body.</p>
-<var class="autodoc-varname">encoding</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><p>The encoding to apply when transforming the
+<var class="autodoc-varname">text</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><p>The response body.</p>
+<var class="autodoc-varname">encoding</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><span class="autodoc-punctuation"> (optional)</span><p>The encoding to apply when transforming the
 text into bytes. Defaults to 'utf-8'.</p>
-<var class="autodoc-varname">chunk_size</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">int</span><p>The size of each chunk to send or -1 to send
+<var class="autodoc-varname">chunk_size</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">int</span><span class="autodoc-punctuation"> (optional)</span><p>The size of each chunk to send or -1 to send
 as a single chunk.. Defaults to -1.</p>
 </div>
 <div class="autodoc-returns">
@@ -987,9 +990,6 @@ as a single chunk.. Defaults to -1.</p>
 <span class="autodoc-summary">The body bytes</span>
 </div>
 <div class="autodoc-raises">
-
-</div>
-<div class="autodoc-description">
 
 </div>
 <div class="autodoc-examples">
