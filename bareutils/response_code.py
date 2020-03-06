@@ -1,4 +1,4 @@
-"""HTTP Status codes
+"""Functions and constants for dealing with HTTP response status codes.
 
 Attributes:
     CONTINUE (int): 100 - This interim response indicates that everything so far
