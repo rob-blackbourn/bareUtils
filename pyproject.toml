@@ -22,7 +22,7 @@ pylint = "^2.4"
 mypy = "^0.740.0"
 autopep8 = "^1.4"
 mkdocs = "^1.0.4"
-jetblack-markdown = "^0.4.1"
+jetblack-markdown = "^0.6"
 mkdocs-material = "^4.6.3"
 
 [build-system]
