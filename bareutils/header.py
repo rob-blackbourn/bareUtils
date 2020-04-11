@@ -1527,6 +1527,30 @@ def origin(
     value = find(b'origin', headers)
     return default if value is None else value
 
+# Proxy-Authorisation
+
+
+def proxy_authorization(
+        headers: Headers,
+        *,
+        default: Optional[Tuple[bytes, bytes]] = None
+) -> Optional[Tuple[bytes, bytes]]:
+    """The HTTP Proxy-Authorization request header contains the credentials to
+    authenticate a user agent to a proxy server, usually after the server has
+    responded with a 407 Proxy Authentication Required status and the
+    Proxy-Authenticate header.
+
+    Args:
+        headers (Headers): The headers.
+        default (Optional[Tuple[bytes, bytes]], optional): An optional default
+            value. Defaults to None.
+
+    Returns:
+        Optional[Tuple[bytes, bytes]]: The type and credentials.
+    """
+    value = find(b'proxy-authorization', headers)
+    return default if value is None else _parse_authorization(value)
+
 # Referer
 
 
