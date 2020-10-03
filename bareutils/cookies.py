@@ -100,7 +100,7 @@ def decode_set_cookie(set_cookie: bytes) -> Mapping[str, Any]:
         Mapping[str, Any]: A dictionary of the values
     """
     i = iter(set_cookie.split(b';'))
-    key, value = next(i).split(b'=', maxsplit=2)
+    key, _, value = next(i).partition(b'=')
     result: Dict[str, Any] = {'name': key, 'value': value}
     for item in i:
         key, _, value = item.partition(b'=')
