@@ -4,7 +4,7 @@
     120
   ],
   "editor.formatOnSave": true,
-  "python.pythonPath": ".venv/bin/python3.8",
+  "python.pythonPath": ".venv/bin/python",
   "python.linting.pylintUseMinimalCheckers": false,
   "python.linting.pylintEnabled": true,
   "python.linting.mypyEnabled": true,
