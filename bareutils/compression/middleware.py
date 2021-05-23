@@ -7,7 +7,7 @@ from baretypes import (
     Info,
     RouteMatches,
     Content,
-    HttpRequestCallback,
+    HttpChainedCallback,
     HttpResponse
 )
 import bareutils.header as header
@@ -158,7 +158,7 @@ class CompressionMiddleware:
             info: Info,
             matches: RouteMatches,
             content: Content,
-            handler: HttpRequestCallback
+            handler: HttpChainedCallback
     ) -> HttpResponse:
         """Call the handler and compress the body if appropriate.
 
@@ -167,7 +167,7 @@ class CompressionMiddleware:
             info (Info): Application supplied information.
             matches (RouteMatches): The route matches.
             content (Content): The request content.
-            handler (HttpRequestCallback): The handler to call and possibly
+            handler (HttpChainedCallback): The handler to call and possibly
                 compress the output of.
 
         Returns:
@@ -177,6 +177,9 @@ class CompressionMiddleware:
 
         if status < 200 or status >= 300:
             return status, headers, body, pushes
+
+        if headers is None:
+            headers = []
 
         accept_encoding = header.accept_encoding(
             scope['headers'], add_identity=True) or {b'identity': 1}
@@ -210,8 +213,13 @@ class CompressionMiddleware:
         # Get the compressor class.
         compressor_cls = self.compressors[encoding]
 
+        body_writer = None if body is None else compression_writer_adapter(
+            body,
+            compressor_cls()
+        )
+
         # Return the response with the body wrapped in the compressor adapter.
-        return status, headers, compression_writer_adapter(body, compressor_cls()), pushes
+        return status, headers, body_writer, pushes
 
 
 def make_default_compression_middleware(

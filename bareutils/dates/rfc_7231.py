@@ -1,17 +1,10 @@
 """Cookies"""
 
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 import re
-from typing import (
-    Any,
-    Dict,
-    List,
-    Mapping,
-    MutableMapping,
-    Optional,
-    Union
-)
+from typing import Optional
 
+# pylint: disable=unused-import
 from baretypes import ParseError
 
 # pylint: disable=line-too-long
