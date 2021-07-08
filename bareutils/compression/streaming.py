@@ -4,7 +4,7 @@ Compression streaming.
 
 from __future__ import annotations
 from abc import ABCMeta, abstractmethod
-from typing import Optional
+from typing import Callable, Optional, cast
 import zlib
 
 from baretypes import Content
@@ -34,13 +34,19 @@ class Compressor(metaclass=ABCMeta):
         """
 
 
+CompressorFactory = Callable[[], Compressor]
+
+
 def make_gzip_compressobj() -> Compressor:
     """Make a compressor for 'gzip'
 
     Returns:
         Compressor: A gzip compressor.
     """
-    return zlib.compressobj(9, zlib.DEFLATED, zlib.MAX_WBITS | 16)
+    return cast(
+        Compressor,
+        zlib.compressobj(9, zlib.DEFLATED, zlib.MAX_WBITS | 16)
+    )
 
 
 def make_deflate_compressobj() -> Compressor:
@@ -49,7 +55,10 @@ def make_deflate_compressobj() -> Compressor:
     Returns:
         Compressor: A deflate compressor.
     """
-    return zlib.compressobj(9, zlib.DEFLATED, -zlib.MAX_WBITS)
+    return cast(
+        Compressor,
+        zlib.compressobj(9, zlib.DEFLATED, -zlib.MAX_WBITS)
+    )
 
 
 def make_compress_compressobj() -> Compressor:
@@ -60,7 +69,10 @@ def make_compress_compressobj() -> Compressor:
     Returns:
         Compressor: A compress compressor.
     """
-    return zlib.compressobj(9, zlib.DEFLATED, zlib.MAX_WBITS)
+    return cast(
+        Compressor,
+        zlib.compressobj(9, zlib.DEFLATED, zlib.MAX_WBITS)
+    )
 
 
 async def compression_writer_adapter(
@@ -131,13 +143,19 @@ class Decompressor(metaclass=ABCMeta):
         ...
 
 
+DecompressorFactory = Callable[[], Decompressor]
+
+
 def make_gzip_decompressobj() -> Decompressor:
     """Make a compressor for 'gzip'
 
     Returns:
         Decompressor: A gzip compressor.
     """
-    return zlib.decompressobj(zlib.MAX_WBITS | 16)
+    return cast(
+        Decompressor,
+        zlib.decompressobj(zlib.MAX_WBITS | 16)
+    )
 
 
 def make_deflate_decompressobj() -> Decompressor:
@@ -146,7 +164,10 @@ def make_deflate_decompressobj() -> Decompressor:
     Returns:
         Decompressor: A deflate compressor.
     """
-    return zlib.decompressobj(-zlib.MAX_WBITS)
+    return cast(
+        Decompressor,
+        zlib.decompressobj(-zlib.MAX_WBITS)
+    )
 
 
 def make_compress_decompressobj() -> Decompressor:
@@ -157,7 +178,10 @@ def make_compress_decompressobj() -> Decompressor:
     Returns:
         Decompressor: A compress compressor.
     """
-    return zlib.decompressobj(9, zlib.DEFLATED, zlib.MAX_WBITS)
+    return cast(
+        Decompressor,
+        zlib.decompressobj(9, zlib.DEFLATED, zlib.MAX_WBITS)
+    )
 
 
 async def compression_reader_adapter(

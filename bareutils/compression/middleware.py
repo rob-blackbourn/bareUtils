@@ -1,6 +1,6 @@
 """Middleware for compression"""
 
-from typing import Mapping, List, Optional, Callable
+from typing import Mapping, List, Optional
 
 from baretypes import (
     Scope,
@@ -13,7 +13,7 @@ from baretypes import (
 import bareutils.header as header
 
 from .streaming import (
-    Compressor,
+    CompressorFactory,
     compression_writer_adapter,
     make_deflate_compressobj,
     make_gzip_compressobj
@@ -25,7 +25,7 @@ class CompressionMiddleware:
 
     def __init__(
             self,
-            compressors: Mapping[bytes, Callable[[], Compressor]],
+            compressors: Mapping[bytes, CompressorFactory],
             minimum_size: int = 512
     ) -> None:
         """Constructs the compression middleware.
@@ -42,7 +42,7 @@ class CompressionMiddleware:
         ```
 
         Args:
-            compressors (Mapping[bytes, Callable[[], Compressor]]): A dictionary
+            compressors (Mapping[bytes, CompressorFactory]): A dictionary
                 of encoding to compressor factories.
             minimum_size (int, optional): The size below which no compression
                 will be attempted. Defaults to 512.

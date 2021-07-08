@@ -2,12 +2,14 @@
 
 from .streaming import (
     Compressor,
+    CompressorFactory,
     make_gzip_compressobj,
     make_deflate_compressobj,
     make_compress_compressobj,
     compression_writer_adapter,
     compression_writer,
     Decompressor,
+    DecompressorFactory,
     make_gzip_decompressobj,
     make_deflate_decompressobj,
     make_compress_decompressobj,
@@ -22,6 +24,9 @@ from .middleware import (
 
 __all__ = [
     'Compressor',
+    'CompressorFactory',
+    'Decompressor',
+    'DecompressorFactory',
     'make_gzip_compressobj',
     'make_deflate_compressobj',
     'make_compress_compressobj',
