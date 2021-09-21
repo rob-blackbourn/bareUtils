@@ -4,6 +4,10 @@ Utilities for [bareASGI](https://github.com/rob-blackbourn/bareASGI)
 and [bareClient](https://github.com/rob-blackbourn/bareClient)
 (read the [docs](https://rob-blackbourn.github.io/bareUtils/)).
 
+## Branch
+
+This is the v3 maintenance branch.
+
 ## Installation
 
 The package can be installed with pip.
