@@ -16,7 +16,11 @@ from .streaming import (
     CompressorFactory,
     compression_writer_adapter,
     make_deflate_compressobj,
-    make_gzip_compressobj
+    make_gzip_compressobj,
+    DecompressorFactory,
+    compression_reader_adapter,
+    make_gzip_decompressobj,
+    make_deflate_decompressobj,
 )
 
 
@@ -26,6 +30,7 @@ class CompressionMiddleware:
     def __init__(
             self,
             compressors: Mapping[bytes, CompressorFactory],
+            decompressors: Mapping[bytes, DecompressorFactory],
             minimum_size: int = 512
     ) -> None:
         """Constructs the compression middleware.
@@ -44,10 +49,13 @@ class CompressionMiddleware:
         Args:
             compressors (Mapping[bytes, CompressorFactory]): A dictionary
                 of encoding to compressor factories.
+            decompressors (Mapping[bytes, DecompressorFactory]): A dictionary
+                of encoding to decompressor factories.
             minimum_size (int, optional): The size below which no compression
                 will be attempted. Defaults to 512.
         """
         self.compressors = compressors
+        self.decompressoprs = decompressors
         self.minimum_size = minimum_size
 
     def is_acceptable(
@@ -173,6 +181,18 @@ class CompressionMiddleware:
         Returns:
             HttpResponse: The response.
         """
+        content_encoding = header.content_encoding(scope['headers'])
+        if content_encoding:
+            for encoding in content_encoding:
+                if encoding in self.decompressoprs:
+                    decompressor = self.decompressoprs[encoding]
+                    content = compression_reader_adapter(
+                        content, decompressor())
+                    break
+            else:
+                # Unsupported media type
+                return 415
+
         status, headers, body, pushes = await handler(scope, info, matches, content)
 
         if status < 200 or status >= 300:
@@ -182,7 +202,9 @@ class CompressionMiddleware:
             headers = []
 
         accept_encoding = header.accept_encoding(
-            scope['headers'], add_identity=True) or {b'identity': 1}
+            scope['headers'],
+            add_identity=True
+        ) or {b'identity': 1}
         content_encoding = header.content_encoding(headers) or [b'identity']
 
         if not self.is_acceptable(accept_encoding, content_encoding):
@@ -247,4 +269,12 @@ def make_default_compression_middleware(
         b'gzip': make_gzip_compressobj,
         b'deflate': make_deflate_compressobj
     }
-    return CompressionMiddleware(compressors, minimum_size)
+    decompressors = {
+        b'gzip': make_gzip_decompressobj,
+        b'deflate': make_deflate_decompressobj
+    }
+    return CompressionMiddleware(
+        compressors,
+        decompressors,
+        minimum_size
+    )
