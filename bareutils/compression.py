@@ -4,12 +4,10 @@ Compression streaming.
 
 from __future__ import annotations
 from abc import ABCMeta, abstractmethod
-from typing import Callable, Optional, cast
+from typing import AsyncIterable, Callable, Optional, cast
 import zlib
 
-from baretypes import Content
-
-from ..streaming import bytes_writer, bytes_reader
+from .streaming import bytes_writer, bytes_reader
 
 
 class Compressor(metaclass=ABCMeta):
@@ -76,17 +74,17 @@ def make_compress_compressobj() -> Compressor:
 
 
 async def compression_writer_adapter(
-        writer: Content,
+        writer: AsyncIterable[bytes],
         compressobj: Compressor
-) -> Content:
+) -> AsyncIterable[bytes]:
     """Adapts a bytes generator to generated compressed output.
 
     Args:
-        writer (Content): The writer to be adapted.
+        writer (AsyncIterable[bytes]): The writer to be adapted.
         compressobj (Compressor): A compressor
 
     Yields:
-        Content: The compressed content as bytes
+        AsyncIterable[bytes]: The compressed content as bytes
     """
     async for buf in writer:
         yield compressobj.compress(buf)
@@ -97,7 +95,7 @@ def compression_writer(
         buf: bytes,
         compressobj: Compressor,
         chunk_size: int = -1
-) -> Content:
+) -> AsyncIterable[bytes]:
     """Create an async iterator for compressed content.
 
     Args:
@@ -107,7 +105,7 @@ def compression_writer(
             chunking. Defaults to -1.
 
     Returns:
-        Content: An async iterator of compressed bytes.
+        AsyncIterable[bytes]: An async iterator of compressed bytes.
     """
     return compression_writer_adapter(bytes_writer(buf, chunk_size), compressobj)
 
@@ -180,18 +178,21 @@ def make_compress_decompressobj() -> Decompressor:
     """
     return cast(
         Decompressor,
-        zlib.decompressobj(9, zlib.DEFLATED, zlib.MAX_WBITS)
+        zlib.decompressobj(9, zlib.DEFLATED, zlib.MAX_WBITS) # type: ignore
     )
 
 
 async def compression_reader_adapter(
-        reader: Content,
+        reader: AsyncIterable[bytes],
         decompressobj: Decompressor
-) -> Content:
+) -> AsyncIterable[bytes]:
     async for item in reader:
         yield decompressobj.decompress(item)
     yield decompressobj.flush()
 
 
-async def compression_reader(source: Content, decompressobj: Decompressor) -> bytes:
+async def compression_reader(
+        source: AsyncIterable[bytes],
+        decompressobj: Decompressor
+) -> bytes:
     return await bytes_reader(compression_reader_adapter(source, decompressobj))

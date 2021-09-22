@@ -2,15 +2,14 @@
 
 from __future__ import annotations
 import codecs
+from typing import AsyncIterable
 
-from baretypes import Content
 
-
-async def bytes_reader(content: Content) -> bytes:
+async def bytes_reader(content: AsyncIterable[bytes]) -> bytes:
     """Extracts the body content as bytes.
 
     Args:
-        content (Content): The content argument of the request handler.
+        content (AsyncIterable[bytes]): The content argument of the request handler.
 
     Returns:
         bytes: The body as bytes.
@@ -21,11 +20,11 @@ async def bytes_reader(content: Content) -> bytes:
     return buf
 
 
-async def text_reader(content: Content, encoding: str = 'utf-8') -> str:
+async def text_reader(content: AsyncIterable[bytes], encoding: str = 'utf-8') -> str:
     """Extracts the body contents as text.
 
     Args:
-        content (Content): The content argument of the request handler.
+        content (AsyncIterable[bytes]): The content argument of the request handler.
         encoding (str, optional): The encoding of the text. Defaults to 'utf-8'.
 
     Returns:
@@ -39,7 +38,7 @@ async def text_reader(content: Content, encoding: str = 'utf-8') -> str:
     return text
 
 
-async def bytes_writer(buf: bytes, chunk_size: int = -1) -> Content:
+async def bytes_writer(buf: bytes, chunk_size: int = -1) -> AsyncIterable[bytes]:
     """Creates an asynchronous iterator from the supplied response body.
 
     Args:
@@ -48,7 +47,7 @@ async def bytes_writer(buf: bytes, chunk_size: int = -1) -> Content:
             as a single chunk.. Defaults to -1.
 
     Yields:
-        Content: The body bytes
+        AsyncIterable[bytes]: The body bytes
     """
     if chunk_size == -1:
         yield buf
@@ -63,7 +62,7 @@ async def text_writer(
         text: str,
         encoding: str = 'utf-8',
         chunk_size: int = -1
-) -> Content:
+) -> AsyncIterable[bytes]:
     """Creates an asynchronous iterator from the supplied response body.
 
     Args:
@@ -74,7 +73,7 @@ async def text_writer(
             as a single chunk.. Defaults to -1.
 
     Yields:
-        Content: The body bytes
+        AsyncIterable[bytes]: The body bytes
     """
     if chunk_size == -1:
         yield text.encode(encoding=encoding)

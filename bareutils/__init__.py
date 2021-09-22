@@ -8,22 +8,20 @@ from .streaming import (
 )
 
 from .compression import (
+    Compressor,
+    CompressorFactory,
     make_gzip_compressobj,
     make_deflate_compressobj,
     make_compress_compressobj,
     compression_writer_adapter,
     compression_writer,
-    make_compress_decompressobj,
-    make_deflate_decompressobj,
+    Decompressor,
+    DecompressorFactory,
     make_gzip_decompressobj,
-    CompressionMiddleware,
-    make_default_compression_middleware
-)
-
-from .responses import (
-    bytes_response,
-    text_response,
-    json_response
+    make_deflate_decompressobj,
+    make_compress_decompressobj,
+    compression_reader_adapter,
+    compression_reader
 )
 
 from .cookies import (
@@ -39,20 +37,20 @@ __all__ = [
     "bytes_writer",
     "bytes_reader",
 
+    'Compressor',
+    'CompressorFactory',
+    'Decompressor',
+    'DecompressorFactory',
     'make_gzip_compressobj',
     'make_deflate_compressobj',
     'make_compress_compressobj',
     'compression_writer_adapter',
     'compression_writer',
-    'make_compress_decompressobj',
-    'make_deflate_decompressobj',
     'make_gzip_decompressobj',
-    'CompressionMiddleware',
-    'make_default_compression_middleware',
-
-    "bytes_response",
-    "text_response",
-    "json_response",
+    'make_deflate_decompressobj',
+    'make_compress_decompressobj',
+    'compression_reader_adapter',
+    'compression_reader',
 
     "encode_set_cookie",
     "decode_set_cookie",

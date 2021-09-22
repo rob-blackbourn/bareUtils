@@ -6,13 +6,23 @@ A collection of functions to extract headers from the ASGI scope.
 import collections
 from datetime import datetime
 from enum import Enum, auto
-from typing import List, Optional, Mapping, MutableMapping, Any, Tuple, Callable, NamedTuple
-
-from baretypes import Headers
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Iterable,
+    List,
+    Mapping,
+    MutableMapping,
+    NamedTuple,
+    Optional,
+    Tuple
+)
 
 from .cookies import decode_cookies, decode_set_cookie
 from .dates.rfc_7231 import parse_date
 
+Header = Tuple[bytes, bytes]
 
 class _MergeType(Enum):
     NONE = auto()
@@ -36,12 +46,12 @@ def _pass_through(value: bytes) -> bytes:
 _DEFAULT_PARSER = _Parser(_pass_through, _MergeType.APPEND)
 
 
-def index(name: bytes, headers: Headers) -> int:
+def index(name: bytes, headers: Iterable[Tuple[bytes, bytes]]) -> int:
     """Find the index of the header in the list.
 
     Args:
         name (bytes): The header name.
-        headers (Headers): The headers to search.
+        headers (Iterable[Tuple[bytes, bytes]]): The headers to search.
 
     Returns:
         int: The index of the header or -1 if not found.
@@ -49,12 +59,16 @@ def index(name: bytes, headers: Headers) -> int:
     return next((i for i, (k, v) in enumerate(headers) if k == name), -1)
 
 
-def find(name: bytes, headers: Headers, default: Optional[bytes] = None) -> Optional[bytes]:
+def find(
+        name: bytes,
+        headers: Iterable[Tuple[bytes, bytes]],
+        default: Optional[bytes] = None
+) -> Optional[bytes]:
     """Find the value of a header, or return a default value.
 
     Args:
         name (bytes): The header name.
-        headers (Headers): The headers to search.
+        headers (Iterable[Tuple[bytes, bytes]]): The headers to search.
         default (Optional[bytes], optional): An optional default value. Defaults
             to None.
 
@@ -64,12 +78,12 @@ def find(name: bytes, headers: Headers, default: Optional[bytes] = None) -> Opti
     return next((v for k, v in headers if k == name), default)
 
 
-def find_all(name: bytes, headers: Headers) -> List[bytes]:
+def find_all(name: bytes, headers: Iterable[Tuple[bytes, bytes]]) -> List[bytes]:
     """Find all the values for a given header.
 
     Args:
         name (bytes): The header name.
-        headers (Headers): The headers to search.
+        headers (Iterable[Tuple[bytes, bytes]]): The headers to search.
 
     Returns:
         List[bytes]: A list of the header values which may be empty if there
@@ -78,13 +92,17 @@ def find_all(name: bytes, headers: Headers) -> List[bytes]:
     return [v for k, v in headers if k == name]
 
 
-def upsert(name: bytes, value: bytes, headers: Headers) -> None:
+def upsert(
+        name: bytes,
+        value: bytes,
+        headers: List[Tuple[bytes, bytes]]
+) -> None:
     """If the header exists overwrite the value, otherwise append a new value.
 
     Args:
         name (bytes): The header name.
         value (bytes): The header value.
-        headers (Headers): The headers.
+        headers (List[Tuple[bytes, bytes]]): The headers.
     """
     for i, item in enumerate(headers):
         if item[0] == name:
@@ -93,19 +111,21 @@ def upsert(name: bytes, value: bytes, headers: Headers) -> None:
     headers.append((name, value))
 
 
-def to_dict(headers: Headers) -> MutableMapping[bytes, List[bytes]]:
+def to_dict(
+        headers: Iterable[Tuple[bytes, bytes]]
+) -> Dict[bytes, List[bytes]]:
     """Convert a list of headers into a dictionary where the key is the header
     name and the value is a list of the values of the headers for that name
 
     Args:
-        headers (Headers): A list of headers.
+        headers (Iterable[Tuple[bytes, bytes]]): The headers.
 
     Returns:
-        MutableMapping[bytes, List[bytes]]: A dictionary where the key is the
+        Dict[bytes, List[bytes]]: A dictionary where the key is the
             header name and the value is a list of the values of the headers for
             that name
     """
-    items: MutableMapping[bytes, List[bytes]] = collections.defaultdict(list)
+    items: Dict[bytes, List[bytes]] = collections.defaultdict(list)
     for name, value in headers:
         items[name].append(value)
     return items
@@ -117,7 +137,7 @@ def _parse_date(value: bytes) -> datetime:
 
 def find_date(
         name: bytes,
-        headers: Headers,
+        headers: Iterable[Tuple[bytes, bytes]],
         *,
         default: Optional[datetime] = None
 ) -> Optional[datetime]:
@@ -125,7 +145,7 @@ def find_date(
 
     Args:
         name (bytes): The name of the header.
-        headers (Headers): The headers.
+        headers (Iterable[Tuple[bytes, bytes]]): The headers.
         default (Optional[datetime], optional): The headers, Defaults to None.
 
     Returns:
@@ -198,7 +218,7 @@ _PARSERS[b'accept'] = _Parser(_parse_accept, _MergeType.NONE)
 
 
 def accept(
-        headers: Headers,
+        headers: Iterable[Tuple[bytes, bytes]],
         *,
         add_wildcard: bool = False,
         default: Optional[Mapping[bytes, Tuple[bytes, Any]]] = None
@@ -213,7 +233,7 @@ def accept(
     ```
 
     Args:
-        headers (Headers): The headers
+        headers (Iterable[Tuple[bytes, bytes]]): The headers
         add_wildcard (bool, optional): If true add the implicit wildcard '*'.
             Defaults to False.
         default (Optional[Mapping[bytes, float]], optional): An optional
@@ -234,7 +254,7 @@ _PARSERS[b'accept-ch'] = _Parser(_parse_comma_separated_list,
 
 
 def accept_ch(
-        headers: Headers,
+        headers: Iterable[Tuple[bytes, bytes]],
         *,
         default: Optional[List[bytes]] = None
 ) -> Optional[List[bytes]]:
@@ -242,7 +262,7 @@ def accept_ch(
     headers client should include in subsequent requests.
 
     Args:
-        headers (Headers): The headers
+        headers (Iterable[Tuple[bytes, bytes]]): The headers
         default (Optional[Mapping[bytes, float]], optional): An optional
             default. Defaults to None.
 
@@ -259,7 +279,7 @@ _PARSERS[b'accept-ch-lifetime'] = _Parser(_parse_int, _MergeType.NONE)
 
 
 def accept_ch_lifetime(
-        headers: Headers,
+        headers: Iterable[Tuple[bytes, bytes]],
         *,
         default: Optional[int] = None
 ) -> Optional[int]:
@@ -268,7 +288,7 @@ def accept_ch_lifetime(
     headers client should include in subsequent requests.
 
     Args:
-        headers (Headers): The headers
+        headers (Iterable[Tuple[bytes, bytes]]): The headers
         default (Optional[Mapping[bytes, float]], optional): An optional
             default. Defaults to None.
 
@@ -297,7 +317,7 @@ _PARSERS[b'accept-charset'] = _Parser(_parse_accept_charset, _MergeType.NONE)
 
 
 def accept_charset(
-        headers: Headers,
+        headers: Iterable[Tuple[bytes, bytes]],
         *,
         add_wildcard: bool = False,
         default: Optional[Mapping[bytes, float]] = None
@@ -306,7 +326,7 @@ def accept_charset(
     encoding and the quality value which defaults to 1.0 if missing.
 
     Args:
-        headers (Headers): The headers
+        headers (Iterable[Tuple[bytes, bytes]]): The headers
         add_wildcard (bool, optional): If True ensures the '*' charset is
             included. Defaults to False.
         default (Optional[Mapping[bytes, float]], optional): An optional
@@ -340,7 +360,7 @@ _PARSERS[b'accept-encoding'] = _Parser(_parse_accept_encoding, _MergeType.NONE)
 
 
 def accept_encoding(
-        headers: Headers,
+        headers: Iterable[Tuple[bytes, bytes]],
         *,
         add_identity: bool = False,
         default: Optional[Mapping[bytes, float]] = None
@@ -349,7 +369,7 @@ def accept_encoding(
     and the quality value which defaults to 1.0 if missing.
 
     Args:
-        headers (Headers): The headers to search.
+        headers (Iterable[Tuple[bytes, bytes]]): The headers to search.
         add_identity (bool, optional): If True ensures the 'identity' encoding
             is included.. Defaults to False.
         default (Optional[Mapping[bytes, float]], optional): An optional
@@ -380,7 +400,7 @@ _PARSERS[b'accept-language'] = _Parser(_parse_accept_language, _MergeType.NONE)
 
 
 def accept_language(
-        headers: Headers,
+        headers: Iterable[Tuple[bytes, bytes]],
         *,
         add_wildcard: bool = False,
         default: Optional[Mapping[bytes, float]] = None
@@ -389,7 +409,7 @@ def accept_language(
     encoding and the quality value which defaults to 1.0 if missing.
 
     Args:
-        headers (Headers): The headers to search.
+        headers (Iterable[Tuple[bytes, bytes]]): The headers to search.
         add_wildcard (bool, optional): If True ensures the '*' charset is
             included. Defaults to False.
         default (Optional[Mapping[bytes, float]], optional): [description].
@@ -416,7 +436,7 @@ _PARSERS[b'accept-patch'] = _Parser(_parse_accept_encoding, _MergeType.NONE)
 
 
 def accept_patch(
-        headers: Headers,
+        headers: Iterable[Tuple[bytes, bytes]],
         *,
         default: Optional[List[Tuple[bytes, Optional[bytes]]]] = None
 ) -> Optional[List[Tuple[bytes, Optional[bytes]]]]:
@@ -424,7 +444,7 @@ def accept_patch(
     server is able to understand.
 
     Args:
-        headers (Headers): The headers to search.
+        headers (Iterable[Tuple[bytes, bytes]]): The headers to search.
         default (Optional[List[Tuple[bytes, Optional[bytes]]]], optional): An
             optional default value. Defaults to None.
 
@@ -446,14 +466,14 @@ _PARSERS[b'accept-ranges'] = _Parser(_parse_accept_ranges, _MergeType.NONE)
 
 
 def accept_ranges(
-        headers: Headers,
+        headers: Iterable[Tuple[bytes, bytes]],
         *,
         default: Optional[bytes] = None
 ) -> Optional[bytes]:
     """Returns the value of the accept ranges header of None if missing
 
     Args:
-        headers (Headers): The headers
+        headers (Iterable[Tuple[bytes, bytes]]): The headers
         default (Optional[bytes], optional): An optional default value. Defaults
             to None.
 
@@ -475,7 +495,7 @@ _PARSERS[b'access-control-allow-credentials'] = _Parser(
 
 
 def access_control_allow_credentials(
-        headers: Headers,
+        headers: Iterable[Tuple[bytes, bytes]],
         *,
         default: Optional[bool] = None
 ) -> Optional[bool]:
@@ -483,7 +503,7 @@ def access_control_allow_credentials(
     missing.
 
     Args:
-        headers (Headers): The headers.
+        headers (Iterable[Tuple[bytes, bytes]]): The headers.
         default (Optional[bool], optional): An optional default value. Defaults
             to None.
 
@@ -501,7 +521,7 @@ _PARSERS[b'access-control-allow-headers'] = _Parser(
 
 
 def access_control_allow_headers(
-        headers: Headers,
+        headers: Iterable[Tuple[bytes, bytes]],
         *,
         default: Optional[List[bytes]] = None
 ) -> Optional[List[bytes]]:
@@ -510,7 +530,7 @@ def access_control_allow_headers(
     indicate which HTTP headers can be used during the actual request.
 
     Args:
-        headers (Headers): The headers.
+        headers (Iterable[Tuple[bytes, bytes]]): The headers.
         default (Optional[List[bytes]], optional): An optional default value.
             Defaults to None.
 
@@ -528,7 +548,7 @@ _PARSERS[b'access-control-allow-methods'] = _Parser(
 
 
 def access_control_allow_methods(
-        headers: Headers,
+        headers: Iterable[Tuple[bytes, bytes]],
         *,
         default: Optional[List[bytes]] = None
 ) -> Optional[List[bytes]]:
@@ -537,7 +557,7 @@ def access_control_allow_methods(
     request.
 
     Args:
-        headers (Headers): The headers.
+        headers (Iterable[Tuple[bytes, bytes]]): The headers.
         default (Optional[List[bytes]], optional): An optional default value.
             Defaults to None.
 
@@ -556,7 +576,7 @@ _PARSERS[b'access-control-allow-origin'] = _Parser(
 
 
 def access_control_allow_origin(
-        headers: Headers,
+        headers: Iterable[Tuple[bytes, bytes]],
         *,
         default: Optional[bytes] = None
 ) -> Optional[bytes]:
@@ -564,7 +584,7 @@ def access_control_allow_origin(
     response can be shared with requesting code from the given origin.
 
     Args:
-        headers (Headers): The headers.
+        headers (Iterable[Tuple[bytes, bytes]]): The headers.
         default (Optional[List[bytes]], optional): An optional default value.
             Defaults to None.
 
@@ -600,7 +620,7 @@ _PARSERS[b'access-control-expose-headers'] = _Parser(
 
 
 def access_control_expose_headers(
-        headers: Headers,
+        headers: Iterable[Tuple[bytes, bytes]],
         *,
         add_simple_response_headers: bool = False,
         default: Optional[List[bytes]] = None
@@ -608,7 +628,7 @@ def access_control_expose_headers(
     """[summary]
 
     Args:
-        headers (Headers): The headers.
+        headers (Iterable[Tuple[bytes, bytes]]): The headers.
         add_simple_response_headers (bool, optional): If true add the safelisted
             headers. Defaults to False.
         default (Optional[List[bytes]], optional): An optional default value.
@@ -630,7 +650,7 @@ _PARSERS[b'access-control-max-age'] = _Parser(_parse_int, _MergeType.NONE)
 
 
 def access_control_max_age(
-        headers: Headers,
+        headers: Iterable[Tuple[bytes, bytes]],
         *,
         default: Optional[int] = None
 ) -> Optional[int]:
@@ -640,7 +660,7 @@ def access_control_max_age(
     be cached.
 
     Args:
-        headers (Headers): The headers
+        headers (Iterable[Tuple[bytes, bytes]]): The headers
         default (Optional[int], optional): An optional default value. Defaults
             to None.
 
@@ -658,7 +678,7 @@ _PARSERS[b'access-control-request-headers'] = _Parser(
 
 
 def access_control_request_headers(
-        headers: Headers,
+        headers: Iterable[Tuple[bytes, bytes]],
         *,
         default: Optional[List[bytes]] = None
 ) -> Optional[List[bytes]]:
@@ -667,7 +687,7 @@ def access_control_request_headers(
     the client might send when the actual request is made.
 
     Args:
-        headers (Headers): The headers
+        headers (Iterable[Tuple[bytes, bytes]]): The headers
         default (Optional[List[bytes]], optional): An optional default value.
             Defaults to None.
 
@@ -685,7 +705,7 @@ _PARSERS[b'access-control-request-method'] = _Parser(
 
 
 def access_control_request_method(
-        headers: Headers,
+        headers: Iterable[Tuple[bytes, bytes]],
         *,
         default: Optional[bytes] = None
 ) -> Optional[bytes]:
@@ -696,7 +716,7 @@ def access_control_request_method(
     the actual request.
 
     Args:
-        headers (Headers): The headers.
+        headers (Iterable[Tuple[bytes, bytes]]): The headers.
         default (Optional[bytes], optional): An optional default value. Defaults
             to None.
 
@@ -713,7 +733,7 @@ _PARSERS[b'age'] = _Parser(_parse_int, _MergeType.NONE)
 
 
 def age(
-        headers: Headers,
+        headers: Iterable[Tuple[bytes, bytes]],
         *,
         default: Optional[int] = None
 ) -> Optional[int]:
@@ -721,7 +741,7 @@ def age(
     proxy cache.
 
     Args:
-        headers (Headers): The headers.
+        headers (Iterable[Tuple[bytes, bytes]]): The headers.
         default (Optional[int], optional): An optional default value. Defaults to None.
 
     Returns:
@@ -737,14 +757,14 @@ _PARSERS[b'allow'] = _Parser(_parse_comma_separated_list, _MergeType.NONE)
 
 
 def allow(
-        headers: Headers,
+        headers: Iterable[Tuple[bytes, bytes]],
         *,
         default: Optional[List[bytes]] = None
 ) -> Optional[List[bytes]]:
     """The Allow header lists the set of methods supported by a resource.
 
     Args:
-        headers (Headers): The headers.
+        headers (Iterable[Tuple[bytes, bytes]]): The headers.
         default (Optional[List[bytes]], optional): An optional default value.
             Defaults to None.
 
@@ -764,7 +784,7 @@ _PARSERS[b'authorization'] = _Parser(_parse_authorization, _MergeType.NONE)
 
 
 def authorization(
-        headers: Headers,
+        headers: Iterable[Tuple[bytes, bytes]],
         *,
         default: Optional[Tuple[bytes, bytes]] = None
 ) -> Optional[Tuple[bytes, bytes]]:
@@ -773,7 +793,7 @@ def authorization(
     responded with a 401 Unauthorized status and the WWW-Authenticate header.
 
     Args:
-        headers (Headers): The headers.
+        headers (Iterable[Tuple[bytes, bytes]]): The headers.
         default (Optional[Tuple[bytes, bytes]], optional): An optional default
             value. Defaults to None.
 
@@ -797,7 +817,7 @@ _PARSERS[b'cache-control'] = _Parser(_parse_cache_control, _MergeType.NONE)
 
 
 def cache_control(
-        headers: Headers,
+        headers: Iterable[Tuple[bytes, bytes]],
         *,
         default: Optional[Mapping[bytes, Optional[int]]] = None
 ) -> Optional[Mapping[bytes, Optional[int]]]:
@@ -807,7 +827,7 @@ def cache_control(
     that the same directive is to be given in the response.
 
     Args:
-        headers (Headers): The headers.
+        headers (Iterable[Tuple[bytes, bytes]]): The headers.
         default (Optional[Mapping[bytes, Optional[int]]], optional): An optional
             default value. Defaults to None.
 
@@ -826,7 +846,7 @@ _PARSERS[b'clear-site-data'] = _Parser(
 
 
 def clear_site_data(
-        headers: Headers,
+        headers: Iterable[Tuple[bytes, bytes]],
         *,
         default: Optional[List[bytes]] = None
 ) -> Optional[List[bytes]]:
@@ -835,7 +855,7 @@ def clear_site_data(
     more control over the data stored locally by a browser for their origins.
 
     Args:
-        headers (Headers): The headers.
+        headers (Iterable[Tuple[bytes, bytes]]): The headers.
         default (Optional[List[bytes]], optional): An optional default value.
             Defaults to None.
 
@@ -852,7 +872,7 @@ _PARSERS[b'connection'] = _Parser(_pass_through, _MergeType.NONE)
 
 
 def connection(
-        headers: Headers,
+        headers: Iterable[Tuple[bytes, bytes]],
         *,
         default: Optional[bytes] = None
 ) -> Optional[bytes]:
@@ -862,7 +882,7 @@ def connection(
     for subsequent requests to the same server to be done.
 
     Args:
-        headers (Headers): The headers.
+        headers (Iterable[Tuple[bytes, bytes]]): The headers.
         default (Optional[bytes], optional): An optional default value. Defaults
             to None.
 
@@ -892,14 +912,14 @@ _PARSERS[b'content-disposition'] = _Parser(
 
 
 def content_disposition(
-        headers: Headers,
+        headers: Iterable[Tuple[bytes, bytes]],
         *,
         default: Optional[Tuple[bytes, Optional[Mapping[bytes, bytes]]]] = None
 ) -> Optional[Tuple[bytes, Optional[Mapping[bytes, bytes]]]]:
     """Returns the content type if any otherwise None
 
     Args:
-        headers (Headers): The headers.
+        headers (Iterable[Tuple[bytes, bytes]]): The headers.
         default (Optional[Tuple[bytes, Optional[Mapping[bytes, bytes]]]], optional): An
             optional default. Defaults to None.
 
@@ -927,7 +947,7 @@ _PARSERS[b'content-encoding'] = _Parser(
 
 
 def content_encoding(
-        headers: Headers,
+        headers: Iterable[Tuple[bytes, bytes]],
         *,
         add_identity: bool = False,
         default: Optional[List[bytes]] = None
@@ -936,7 +956,7 @@ def content_encoding(
     specified.
 
     Args:
-        headers (Headers): The headers.
+        headers (Iterable[Tuple[bytes, bytes]]): The headers.
         add_identity (bool, optional): If True ensures the 'identity' encoding
             is included. Defaults to False.
         default (Optional[List[bytes]], optional): An optional default value.
@@ -959,7 +979,7 @@ _PARSERS[b'content-language'] = _Parser(
 
 
 def content_language(
-        headers: Headers,
+        headers: Iterable[Tuple[bytes, bytes]],
         *,
         default: Optional[List[bytes]] = None
 ) -> Optional[List[bytes]]:
@@ -968,7 +988,7 @@ def content_language(
     according to the users' own preferred language.
 
     Args:
-        headers (Headers): The headers.
+        headers (Iterable[Tuple[bytes, bytes]]): The headers.
         default (Optional[List[bytes]], optional): An optional default value.
             Defaults to None.
 
@@ -985,14 +1005,14 @@ _PARSERS[b'content-length'] = _Parser(_parse_int, _MergeType.NONE)
 
 
 def content_length(
-        headers: Headers,
+        headers: Iterable[Tuple[bytes, bytes]],
         *,
         default: Optional[int] = None
 ) -> Optional[int]:
     """[summary]
 
     Args:
-        headers (Headers): The headers.
+        headers (Iterable[Tuple[bytes, bytes]]): The headers.
         default (Optional[int], optional): An optional default value. Defaults
             to None.
 
@@ -1009,7 +1029,7 @@ _PARSERS[b'content-location'] = _Parser(_pass_through, _MergeType.NONE)
 
 
 def content_location(
-        headers: Headers,
+        headers: Iterable[Tuple[bytes, bytes]],
         *,
         default: Optional[bytes] = None
 ) -> Optional[bytes]:
@@ -1018,7 +1038,7 @@ def content_location(
     transmitted as the result of content negotiation.
 
     Args:
-        headers (Headers): The headers.
+        headers (Iterable[Tuple[bytes, bytes]]): The headers.
         default (Optional[bytes], optional): An optional default value. Defaults
             to None.
 
@@ -1048,7 +1068,7 @@ _PARSERS[b'content-range'] = _Parser(_parse_content_range, _MergeType.NONE)
 
 
 def content_range(
-        headers: Headers,
+        headers: Iterable[Tuple[bytes, bytes]],
         *,
         default: Optional[Tuple[bytes, Optional[Tuple[int, int]], Optional[int]]] = None,
 ) -> Optional[Tuple[bytes, Optional[Tuple[int, int]], Optional[int]]]:
@@ -1056,7 +1076,7 @@ def content_range(
     message a partial message belongs.
 
     Args:
-        headers (Headers): The headers.
+        headers (Iterable[Tuple[bytes, bytes]]): The headers.
         default (Optional[Tuple[bytes, Optional[Tuple[int, int]], Optional[int]]], optional): An
             optional default value. Defaults to None.
 
@@ -1086,7 +1106,7 @@ _PARSERS[b'content-security-policy'] = _Parser(
 
 
 def content_security_policy(
-        headers: Headers,
+        headers: Iterable[Tuple[bytes, bytes]],
         *,
         default: Optional[List[Tuple[bytes, List[bytes]]]] = None
 ) -> Optional[List[Tuple[bytes, List[bytes]]]]:
@@ -1097,7 +1117,7 @@ def content_security_policy(
     attacks (XSS).
 
     Args:
-        headers (Headers): The headers
+        headers (Iterable[Tuple[bytes, bytes]]): The headers
         default (Optional[List[Tuple[bytes, List[bytes]]]], optional): An
             optional default. Defaults to None.
 
@@ -1117,7 +1137,7 @@ _PARSERS[b'content-security-policy-report-only'] = _Parser(
 
 
 def content_security_policy_report_only(
-        headers: Headers,
+        headers: Iterable[Tuple[bytes, bytes]],
         *,
         default: Optional[List[Tuple[bytes, List[bytes]]]] = None
 ) -> Optional[List[Tuple[bytes, List[bytes]]]]:
@@ -1127,7 +1147,7 @@ def content_security_policy_report_only(
     HTTP POST request to the specified URI.
 
     Args:
-        headers (Headers): The headers.
+        headers (Iterable[Tuple[bytes, bytes]]): The headers.
         default (Optional[List[Tuple[bytes, List[bytes]]]], optional): An
             optional default value. Defaults to None.
 
@@ -1156,14 +1176,14 @@ _PARSERS[b'content-type'] = _Parser(_parse_content_type, _MergeType.NONE)
 
 
 def content_type(
-        headers: Headers,
+        headers: Iterable[Tuple[bytes, bytes]],
         *,
         default: Optional[Tuple[bytes, Optional[Mapping[bytes, bytes]]]] = None
 ) -> Optional[Tuple[bytes, Optional[Mapping[bytes, bytes]]]]:
     """Returns the content type if any otherwise None
 
     Args:
-        headers (Headers): The headers
+        headers (Iterable[Tuple[bytes, bytes]]): The headers
         default (Optional[Tuple[bytes, Optional[Mapping[bytes, bytes]]]], optional): An
             optional default value. Defaults to None.
 
@@ -1187,11 +1207,11 @@ def _parse_cookie(value: bytes) -> Mapping[bytes, List[bytes]]:
 _PARSERS[b'cookie'] = _Parser(_parse_cookie, _MergeType.EXTEND)
 
 
-def cookie(headers: Headers) -> Mapping[bytes, List[bytes]]:
+def cookie(headers: Iterable[Tuple[bytes, bytes]]) -> Mapping[bytes, List[bytes]]:
     """Returns the cookies as a name-value mapping.
 
     Args:
-        headers (Headers): The headers.
+        headers (Iterable[Tuple[bytes, bytes]]): The headers.
 
     Returns:
         Mapping[bytes, List[bytes]]: The cookies as a name-value mapping.
@@ -1212,7 +1232,7 @@ _PARSERS[b'cross-origin-resource-policy'] = _Parser(
 
 
 def cross_origin_resource_policy(
-        headers: Headers,
+        headers: Iterable[Tuple[bytes, bytes]],
         *,
         default: Optional[bytes] = None
 ) -> Optional[bytes]:
@@ -1221,7 +1241,7 @@ def cross_origin_resource_policy(
     given resource.
 
     Args:
-        headers (Headers): The headers.
+        headers (Iterable[Tuple[bytes, bytes]]): The headers.
         default (Optional[bytes], optional): An optional default value. Defaults
             to None.
 
@@ -1238,7 +1258,7 @@ _PARSERS[b'date'] = _Parser(_parse_date, _MergeType.NONE)
 
 
 def date(
-        headers: Headers,
+        headers: Iterable[Tuple[bytes, bytes]],
         *,
         default: Optional[datetime] = None
 ) -> Optional[datetime]:
@@ -1246,7 +1266,7 @@ def date(
     message was originated.
 
     Args:
-        headers (Headers): The headers.
+        headers (Iterable[Tuple[bytes, bytes]]): The headers.
         default (Optional[datetime], optional): An optional default value.
             Defaults to None.
 
@@ -1262,7 +1282,7 @@ _PARSERS[b'DNT'] = _Parser(_parse_int, _MergeType.NONE)
 
 
 def dnt(
-        headers: Headers,
+        headers: Iterable[Tuple[bytes, bytes]],
         *,
         default: Optional[int] = None
 ) -> Optional[int]:
@@ -1271,7 +1291,7 @@ def dnt(
     than personalized content.
 
     Args:
-        headers (Headers): The headers.
+        headers (Iterable[Tuple[bytes, bytes]]): The headers.
         default (Optional[int], optional): An optional default value. Defaults
             to None.
 
@@ -1288,7 +1308,7 @@ _PARSERS[b'DPR'] = _Parser(_parse_float, _MergeType.NONE)
 
 
 def dpr(
-        headers: Headers,
+        headers: Iterable[Tuple[bytes, bytes]],
         *,
         default: Optional[float] = None
 ) -> Optional[float]:
@@ -1297,7 +1317,7 @@ def dpr(
     corresponding to every CSS pixel.
 
     Args:
-        headers (Headers): The headers.
+        headers (Iterable[Tuple[bytes, bytes]]): The headers.
         default (Optional[float], optional): An optional default value. Defaults
             to None.
 
@@ -1314,7 +1334,7 @@ _PARSERS[b'device-memory'] = _Parser(_parse_float, _MergeType.NONE)
 
 
 def device_memory(
-        headers: Headers,
+        headers: Iterable[Tuple[bytes, bytes]],
         *,
         default: Optional[float] = None
 ) -> Optional[float]:
@@ -1323,7 +1343,7 @@ def device_memory(
     device has.
 
     Args:
-        headers (Headers): The headers
+        headers (Iterable[Tuple[bytes, bytes]]): The headers
         default (Optional[float], optional): An optional default value.
             Defaults to None.
 
@@ -1340,14 +1360,14 @@ _PARSERS[b'expect'] = _Parser(_pass_through, _MergeType.NONE)
 
 
 def expect(
-        headers: Headers,
+        headers: Iterable[Tuple[bytes, bytes]],
         *,
         default: Optional[bytes] = None
 ) -> Optional[bytes]:
     """Returns the expect header
 
     Args:
-        headers (Headers): The headers.
+        headers (Iterable[Tuple[bytes, bytes]]): The headers.
         default (Optional[bytes], optional): An optional default value.
             Defaults to None.
 
@@ -1364,7 +1384,7 @@ _PARSERS[b'expires'] = _Parser(_parse_date, _MergeType.NONE)
 
 
 def expires(
-        headers: Headers,
+        headers: Iterable[Tuple[bytes, bytes]],
         *,
         default: Optional[datetime] = None
 ) -> Optional[datetime]:
@@ -1372,7 +1392,7 @@ def expires(
     considered stale.
 
     Args:
-        headers (Headers): The headers.
+        headers (Iterable[Tuple[bytes, bytes]]): The headers.
         default (Optional[datetime], optional): An optional default value.
             Defaults to None.
 
@@ -1399,14 +1419,14 @@ _PARSERS[b'host'] = _Parser(_parse_host, _MergeType.NONE)
 
 
 def host(
-        headers: Headers,
+        headers: Iterable[Tuple[bytes, bytes]],
         *,
         default: Optional[Tuple[bytes, Optional[int]]] = None
 ) -> Optional[Tuple[bytes, Optional[int]]]:
     """Returns the host header as a name, port tuple
 
     Args:
-        headers (Headers): The headers.
+        headers (Iterable[Tuple[bytes, bytes]]): The headers.
         default (Optional[Tuple[bytes, Optional[int]]], optional): An optional
             default value. Defaults to None.
 
@@ -1423,7 +1443,7 @@ _PARSERS[b'if-modified-since'] = _Parser(_parse_date, _MergeType.NONE)
 
 
 def if_modified_since(
-        headers: Headers,
+        headers: Iterable[Tuple[bytes, bytes]],
         *,
         default: Optional[datetime] = None
 ) -> Optional[datetime]:
@@ -1436,7 +1456,7 @@ def if_modified_since(
     used with a GET or HEAD.
 
     Args:
-        headers (Headers): The headers
+        headers (Iterable[Tuple[bytes, bytes]]): The headers
         default (Optional[datetime], optional): [description]. Defaults to None.
 
     Returns:
@@ -1452,7 +1472,7 @@ _PARSERS[b'last-modified'] = _Parser(_parse_date, _MergeType.NONE)
 
 
 def last_modified(
-        headers: Headers,
+        headers: Iterable[Tuple[bytes, bytes]],
         *,
         default: Optional[datetime] = None
 ) -> Optional[datetime]:
@@ -1464,7 +1484,7 @@ def last_modified(
     use of this field.
 
     Args:
-        headers (Headers): The headers.
+        headers (Iterable[Tuple[bytes, bytes]]): The headers.
         default (Optional[datetime], optional): An optional default value.
             Defaults to None.
 
@@ -1481,7 +1501,7 @@ _PARSERS[b'location'] = _Parser(_pass_through, _MergeType.NONE)
 
 
 def location(
-        headers: Headers,
+        headers: Iterable[Tuple[bytes, bytes]],
         *,
         default: Optional[bytes] = None
 ) -> Optional[bytes]:
@@ -1490,7 +1510,7 @@ def location(
     (created) status response.
 
     Args:
-        headers (Headers): The headers.
+        headers (Iterable[Tuple[bytes, bytes]]): The headers.
         default (Optional[bytes], optional): An optional default value. Defaults
             to None.
 
@@ -1507,7 +1527,7 @@ _PARSERS[b'origin'] = _Parser(_pass_through, _MergeType.NONE)
 
 
 def origin(
-        headers: Headers,
+        headers: Iterable[Tuple[bytes, bytes]],
         *,
         default: Optional[bytes] = None
 ) -> Optional[bytes]:
@@ -1517,7 +1537,7 @@ def origin(
     Referer header, but, unlike this header, it doesn't disclose the whole path.
 
     Args:
-        headers (Headers): The headers.
+        headers (Iterable[Tuple[bytes, bytes]]): The headers.
         default (Optional[bytes], optional): An optional default value.
             Defaults to None.
 
@@ -1531,7 +1551,7 @@ def origin(
 
 
 def proxy_authorization(
-        headers: Headers,
+        headers: Iterable[Tuple[bytes, bytes]],
         *,
         default: Optional[Tuple[bytes, bytes]] = None
 ) -> Optional[Tuple[bytes, bytes]]:
@@ -1541,7 +1561,7 @@ def proxy_authorization(
     Proxy-Authenticate header.
 
     Args:
-        headers (Headers): The headers.
+        headers (Iterable[Tuple[bytes, bytes]]): The headers.
         default (Optional[Tuple[bytes, bytes]], optional): An optional default
             value. Defaults to None.
 
@@ -1558,7 +1578,7 @@ _PARSERS[b'referer'] = _Parser(_pass_through, _MergeType.NONE)
 
 
 def referer(
-        headers: Headers,
+        headers: Iterable[Tuple[bytes, bytes]],
         *,
         default: Optional[bytes] = None
 ) -> Optional[bytes]:
@@ -1568,7 +1588,7 @@ def referer(
     may use that data for analytics, logging, or optimized caching, for example.
 
     Args:
-        headers (Headers): The headers.
+        headers (Iterable[Tuple[bytes, bytes]]): The headers.
         default (Optional[bytes], optional): An optional default value. Defaults
             to None.
 
@@ -1585,7 +1605,7 @@ _PARSERS[b'server'] = _Parser(_pass_through, _MergeType.NONE)
 
 
 def server(
-        headers: Headers,
+        headers: Iterable[Tuple[bytes, bytes]],
         *,
         default: Optional[bytes] = None
 ) -> Optional[bytes]:
@@ -1593,7 +1613,7 @@ def server(
     origin server to handle the request.
 
     Args:
-        headers (Headers): The headers.
+        headers (Iterable[Tuple[bytes, bytes]]): The headers.
         default (Optional[bytes], optional): An optional default value.
             Defaults to None.
 
@@ -1609,7 +1629,7 @@ def server(
 _PARSERS[b'set-cookie'] = _Parser(decode_set_cookie, _MergeType.APPEND)
 
 
-def set_cookie(headers: Headers) -> Mapping[bytes, List[Mapping[str, Any]]]:
+def set_cookie(headers: Iterable[Tuple[bytes, bytes]]) -> Mapping[bytes, List[Mapping[str, Any]]]:
     """Returns the cookies as a name-value mapping.
 
     Args:
@@ -1636,14 +1656,14 @@ _PARSERS[b'vary'] = _Parser(_parse_vary, _MergeType.NONE)
 
 
 def vary(
-        headers: Headers,
+        headers: Iterable[Tuple[bytes, bytes]],
         *,
         default: Optional[List[bytes]] = None
 ) -> Optional[List[bytes]]:
     """Returns the vary header value as a list of headers.
 
     Args:
-        value (bytes): The headers.
+        headers (Iterable[Tuple[bytes, bytes]]): The headers.
         default (Optional[List[bytes]], optional): An optional default value.
             Defaults to None.
 
@@ -1655,16 +1675,16 @@ def vary(
     return default if value is None else _parse_vary(value)
 
 
-def collect(headers: Headers) -> Mapping[bytes, Any]:
+def collect(headers: Iterable[Tuple[bytes, bytes]]) -> Dict[bytes, Any]:
     """Collect all headers into a mapping
 
     Args:
-        headers (Headers): The headers
+        headers (Iterable[Tuple[bytes, bytes]]): The headers
 
     Returns:
-        Mapping[bytes, Any]: A mapping of the parsed headers
+        Dict[bytes, Any]: A mapping of the parsed headers
     """
-    collection: MutableMapping[bytes, Any] = dict()
+    collection: Dict[bytes, Any] = dict()
     for name, value in headers:
         parser = _PARSERS.get(name, _DEFAULT_PARSER)
         if parser.merge_type == _MergeType.APPEND:

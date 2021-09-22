@@ -12,7 +12,6 @@ repository = "https://github.com/rob-blackbourn/bareutils"
 
 [tool.poetry.dependencies]
 python = "^3.7"
-baretypes = "^3"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.0"

@@ -4,9 +4,6 @@ from datetime import datetime, timezone
 import re
 from typing import Optional
 
-# pylint: disable=unused-import
-from baretypes import ParseError
-
 # pylint: disable=line-too-long
 # Date: <day-name>, <day> <month> <year> <hour>:<minute>:<second> GMT
 DATE_PATTERN = re.compile(
