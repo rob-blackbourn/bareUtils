@@ -5,26 +5,26 @@ import codecs
 from typing import AsyncIterable
 
 
-async def bytes_reader(content: AsyncIterable[bytes]) -> bytes:
-    """Extracts the body content as bytes.
+async def bytes_reader(body: AsyncIterable[bytes]) -> bytes:
+    """Extracts the body body as bytes.
 
     Args:
-        content (AsyncIterable[bytes]): The content argument of the request handler.
+        body (AsyncIterable[bytes]): The body argument of the request.
 
     Returns:
         bytes: The body as bytes.
     """
     buf = b''
-    async for b in content:
-        buf += b
+    async for value in body:
+        buf += value
     return buf
 
 
-async def text_reader(content: AsyncIterable[bytes], encoding: str = 'utf-8') -> str:
+async def text_reader(body: AsyncIterable[bytes], encoding: str = 'utf-8') -> str:
     """Extracts the body contents as text.
 
     Args:
-        content (AsyncIterable[bytes]): The content argument of the request handler.
+        body (AsyncIterable[bytes]): The body of the request.
         encoding (str, optional): The encoding of the text. Defaults to 'utf-8'.
 
     Returns:
@@ -33,7 +33,7 @@ async def text_reader(content: AsyncIterable[bytes], encoding: str = 'utf-8') ->
     codec_info: codecs.CodecInfo = codecs.lookup(encoding)
     decoder = codec_info.incrementaldecoder()
     text = ''
-    async for b in content:
+    async for b in body:
         text += decoder.decode(b)
     return text
 

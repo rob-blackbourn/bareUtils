@@ -214,7 +214,7 @@ def is_information(code: int) -> bool:
     Returns:
         bool: True if the code was informational else false.
     """
-    return code >= 100 and code < 200
+    return 100 <= code < 200
 
 
 def is_successful(code: int) -> bool:
@@ -226,7 +226,7 @@ def is_successful(code: int) -> bool:
     Returns:
         bool: True if the code was successful else false.
     """
-    return code >= 200 and code < 300
+    return 200 <= code < 300
 
 
 def is_redirection(code: int) -> bool:
@@ -238,7 +238,7 @@ def is_redirection(code: int) -> bool:
     Returns:
         bool: True if the code was a redirection else false.
     """
-    return code >= 300 and code < 400
+    return 300 <= code < 400
 
 
 def is_client_error(code: int) -> bool:
@@ -250,7 +250,7 @@ def is_client_error(code: int) -> bool:
     Returns:
         bool: True if the code was a client error else false.
     """
-    return code >= 400 and code < 500
+    return 400 <= code < 500
 
 
 def is_server_error(code: int) -> bool:
@@ -262,7 +262,7 @@ def is_server_error(code: int) -> bool:
     Returns:
         bool: True if the code was a server error else false.
     """
-    return code >= 500 and code < 600
+    return 500 <= code < 600
 
 
 # Information responses
