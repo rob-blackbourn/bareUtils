@@ -1,4 +1,4 @@
-"""Cookies"""
+"""RFC7231"""
 
 from datetime import datetime, timezone
 import re

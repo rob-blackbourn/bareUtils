@@ -35,16 +35,12 @@ class _Parser(NamedTuple):
     parse: Callable[[bytes], Any]
     merge_type: _MergeType
 
-
 _PARSERS: MutableMapping[bytes, _Parser] = dict()
-
 
 def _pass_through(value: bytes) -> bytes:
     return value
 
-
 _DEFAULT_PARSER = _Parser(_pass_through, _MergeType.APPEND)
-
 
 def index(name: bytes, headers: Iterable[Tuple[bytes, bytes]]) -> int:
     """Find the index of the header in the list.
@@ -57,7 +53,6 @@ def index(name: bytes, headers: Iterable[Tuple[bytes, bytes]]) -> int:
         int: The index of the header or -1 if not found.
     """
     return next((i for i, (k, v) in enumerate(headers) if k == name), -1)
-
 
 def find(
         name: bytes,
@@ -77,6 +72,26 @@ def find(
     """
     return next((v for k, v in headers if k == name), default)
 
+def find_exact(
+        name: bytes,
+        headers: Iterable[Tuple[bytes, bytes]]
+) -> bytes:
+    """Find the value of a header, or raise an error.
+
+    Args:
+        name (bytes): The header name.
+        headers (Iterable[Tuple[bytes, bytes]]): The headers to search.
+
+    Raises:
+        KeyError: If the name was not found.
+
+    Returns:
+        bytes: The value of the header.
+    """
+    for k, v in headers:
+        if k == name:
+            return v
+    raise KeyError
 
 def find_all(name: bytes, headers: Iterable[Tuple[bytes, bytes]]) -> List[bytes]:
     """Find all the values for a given header.
@@ -90,7 +105,6 @@ def find_all(name: bytes, headers: Iterable[Tuple[bytes, bytes]]) -> List[bytes]
             were none found.
     """
     return [v for k, v in headers if k == name]
-
 
 def upsert(
         name: bytes,
@@ -109,7 +123,6 @@ def upsert(
             headers[i] = (name, value)
             return
     headers.append((name, value))
-
 
 def to_dict(
         headers: Iterable[Tuple[bytes, bytes]]
@@ -130,10 +143,8 @@ def to_dict(
         items[name].append(value)
     return items
 
-
 def _parse_date(value: bytes) -> datetime:
     return parse_date(value.decode())
-
 
 def find_date(
         name: bytes,
@@ -154,18 +165,14 @@ def find_date(
     value = find(name, headers)
     return default if not value else _parse_date(value)
 
-
 def _parse_comma_separated_list(value: bytes) -> List[bytes]:
     return [item.strip() for item in value.split(b',')]
-
 
 def _parse_int(value: bytes) -> int:
     return int(value)
 
-
 def _parse_float(value: bytes) -> float:
     return float(value)
-
 
 def _parse_quality(value: bytes) -> Optional[float]:
     if value == b'':
@@ -175,13 +182,11 @@ def _parse_quality(value: bytes) -> Optional[float]:
         raise ValueError('expected "q"')
     return float(quality)
 
-
 def _parse_accept_quality(value: bytes) -> Tuple[bytes, Any]:
     if value == b'':
         return b'q', 1.0
     name, quality = value.split(b'=')
     return name, float(quality) if name == b'q' else quality
-
 
 def _parse_media_type_and_encoding(
         value: bytes
@@ -195,8 +200,7 @@ def _parse_media_type_and_encoding(
             raise Exception('encoding must start with chartset')
     return media_type.strip(), encoding.strip() if encoding else None
 
-
-# Accept
+ACCEPT = b'accept'
 
 def _parse_accept(
         value: bytes,
@@ -213,9 +217,7 @@ def _parse_accept(
 
     return values
 
-
-_PARSERS[b'accept'] = _Parser(_parse_accept, _MergeType.NONE)
-
+_PARSERS[ACCEPT] = _Parser(_parse_accept, _MergeType.NONE)
 
 def accept(
         headers: Iterable[Tuple[bytes, bytes]],
@@ -243,15 +245,12 @@ def accept(
         Optional[Mapping[bytes, Tuple[bytes, Any]]]: A dictionary where the key
             is media type and the value is quality.
     """
-    value = find(b'accept', headers)
+    value = find(ACCEPT, headers)
     return default if value is None else _parse_accept(value, add_wildcard=add_wildcard)
 
-# Accept-CH
+ACCEPT_CH = b'accept-ch'
 
-
-_PARSERS[b'accept-ch'] = _Parser(_parse_comma_separated_list,
-                                 _MergeType.CONCAT)
-
+_PARSERS[ACCEPT_CH] = _Parser(_parse_comma_separated_list, _MergeType.CONCAT)
 
 def accept_ch(
         headers: Iterable[Tuple[bytes, bytes]],
@@ -269,14 +268,12 @@ def accept_ch(
     Returns:
         Optional[List[bytes]]: The client hints
     """
-    value = find(b'accept-ch', headers)
+    value = find(ACCEPT_CH, headers)
     return default if value is None else _parse_comma_separated_list(value)
 
-# Accept-CH-Lifetime
+ACCEPT_CH_LIFETIME = b'accept-ch-lifetime'
 
-
-_PARSERS[b'accept-ch-lifetime'] = _Parser(_parse_int, _MergeType.NONE)
-
+_PARSERS[ACCEPT_CH_LIFETIME] = _Parser(_parse_int, _MergeType.NONE)
 
 def accept_ch_lifetime(
         headers: Iterable[Tuple[bytes, bytes]],
@@ -295,11 +292,10 @@ def accept_ch_lifetime(
     Returns:
         Optional[int]: The lifetime in seconds
     """
-    value = find(b'accept-ch-lifetime', headers)
+    value = find(ACCEPT_CH_LIFETIME, headers)
     return default if value is None else _parse_int(value)
 
-
-# Accept-Charset
+ACCEPT_CHARSET = b'accept-charset'
 
 def _parse_accept_charset(value: bytes, *, add_wildcard: bool = False) -> Mapping[bytes, float]:
     charsets = {
@@ -312,9 +308,7 @@ def _parse_accept_charset(value: bytes, *, add_wildcard: bool = False) -> Mappin
 
     return charsets
 
-
-_PARSERS[b'accept-charset'] = _Parser(_parse_accept_charset, _MergeType.NONE)
-
+_PARSERS[ACCEPT_CHARSET] = _Parser(_parse_accept_charset, _MergeType.NONE)
 
 def accept_charset(
         headers: Iterable[Tuple[bytes, bytes]],
@@ -335,14 +329,13 @@ def accept_charset(
     Returns:
         Optional[Mapping[bytes, float]]: A mapping of the encodings and qualities.
     """
-    value = find(b'accept-charset', headers)
+    value = find(ACCEPT_CHARSET, headers)
     return default if value is None else _parse_accept_charset(
         value,
         add_wildcard=add_wildcard
     )
 
-# Accept-Encoding
-
+ACCEPT_ENCODING = b'accept-encoding'
 
 def _parse_accept_encoding(value: bytes, *, add_identity: bool = False) -> Mapping[bytes, float]:
     encodings = {
@@ -355,9 +348,7 @@ def _parse_accept_encoding(value: bytes, *, add_identity: bool = False) -> Mappi
 
     return encodings
 
-
-_PARSERS[b'accept-encoding'] = _Parser(_parse_accept_encoding, _MergeType.NONE)
-
+_PARSERS[ACCEPT_ENCODING] = _Parser(_parse_accept_encoding, _MergeType.NONE)
 
 def accept_encoding(
         headers: Iterable[Tuple[bytes, bytes]],
@@ -378,11 +369,10 @@ def accept_encoding(
     Returns:
         Optional[Mapping[bytes, float]]: A mapping of the encodings and qualities.
     """
-    value = find(b'accept-encoding', headers)
+    value = find(ACCEPT_ENCODING, headers)
     return default if value is None else _parse_accept_encoding(value, add_identity=add_identity)
 
-
-# Accept-Language
+ACCEPT_LANGUAGE = b'accept-language'
 
 def _parse_accept_language(value: bytes, *, add_wildcard: bool = False) -> Mapping[bytes, float]:
     languages = {
@@ -395,9 +385,7 @@ def _parse_accept_language(value: bytes, *, add_wildcard: bool = False) -> Mappi
 
     return languages
 
-
-_PARSERS[b'accept-language'] = _Parser(_parse_accept_language, _MergeType.NONE)
-
+_PARSERS[ACCEPT_LANGUAGE] = _Parser(_parse_accept_language, _MergeType.NONE)
 
 def accept_language(
         headers: Iterable[Tuple[bytes, bytes]],
@@ -419,11 +407,10 @@ def accept_language(
         Optional[Mapping[bytes, float]]: A mapping of the encodings and
             qualities.
     """
-    value = find(b'accept-language', headers)
+    value = find(ACCEPT_LANGUAGE, headers)
     return default if value is None else _parse_accept_language(value, add_wildcard=add_wildcard)
 
-
-# Accept-Patch
+ACCEPT_PATCH = b'accept-patch'
 
 def _parse_accept_patch(value: bytes) -> List[Tuple[bytes, Optional[bytes]]]:
     return [
@@ -431,9 +418,7 @@ def _parse_accept_patch(value: bytes) -> List[Tuple[bytes, Optional[bytes]]]:
         for item in value.split(b',')
     ]
 
-
-_PARSERS[b'accept-patch'] = _Parser(_parse_accept_encoding, _MergeType.NONE)
-
+_PARSERS[ACCEPT_PATCH] = _Parser(_parse_accept_encoding, _MergeType.NONE)
 
 def accept_patch(
         headers: Iterable[Tuple[bytes, bytes]],
@@ -452,18 +437,15 @@ def accept_patch(
         Optional[List[Tuple[bytes, Optional[bytes]]]]: A list of tuples of media
             type and optional charset.
     """
-    value = find(b'accept-patch', headers)
+    value = find(ACCEPT_PATCH, headers)
     return default if value is None else _parse_accept_patch(value)
 
-
-# Accept-Ranges
+ACCEPT_RANGES = b'accept-ranges'
 
 def _parse_accept_ranges(value: bytes) -> bytes:
     return value.strip()
 
-
-_PARSERS[b'accept-ranges'] = _Parser(_parse_accept_ranges, _MergeType.NONE)
-
+_PARSERS[ACCEPT_RANGES] = _Parser(_parse_accept_ranges, _MergeType.NONE)
 
 def accept_ranges(
         headers: Iterable[Tuple[bytes, bytes]],
@@ -480,19 +462,18 @@ def accept_ranges(
     Returns:
         Optional[bytes]: The header value (bytes or none)
     """
-    value = find(b'accept-ranges', headers)
+    value = find(ACCEPT_RANGES, headers)
     return default if value is None else _parse_accept_ranges(value)
 
-
-# Access-Control-Allow-Credentials
+ACCESS_CONTROL_ALLOW_CREDENTIALS = b'access-control-allow-credentials'
 
 def _parse_access_control_allow_credentials(value: bytes) -> bool:
     return value.lower() == b'true'
 
-
-_PARSERS[b'access-control-allow-credentials'] = _Parser(
-    _parse_access_control_allow_credentials, _MergeType.NONE)
-
+_PARSERS[ACCESS_CONTROL_ALLOW_CREDENTIALS] = _Parser(
+    _parse_access_control_allow_credentials,
+    _MergeType.NONE
+)
 
 def access_control_allow_credentials(
         headers: Iterable[Tuple[bytes, bytes]],
@@ -510,15 +491,15 @@ def access_control_allow_credentials(
     Returns:
         Optional[bool]: A bool or None
     """
-    value = find(b'access-control-allow-credentials', headers)
+    value = find(ACCESS_CONTROL_ALLOW_CREDENTIALS, headers)
     return default if value is None else _parse_access_control_allow_credentials(value)
 
+ACCESS_CONTROL_ALLOW_HEADERS = b'access-control-allow-headers'
 
-# Access-Control-Allow-Headers
-
-_PARSERS[b'access-control-allow-headers'] = _Parser(
-    _parse_comma_separated_list, _MergeType.NONE)
-
+_PARSERS[ACCESS_CONTROL_ALLOW_HEADERS] = _Parser(
+    _parse_comma_separated_list,
+    _MergeType.NONE
+)
 
 def access_control_allow_headers(
         headers: Iterable[Tuple[bytes, bytes]],
@@ -537,15 +518,15 @@ def access_control_allow_headers(
     Returns:
         Optional[List[bytes]]: A list of the allowed headers or '*' for all headers.
     """
-    value = find(b'access-control-allow-headers', headers)
+    value = find(ACCESS_CONTROL_ALLOW_HEADERS, headers)
     return default if value is None else _parse_comma_separated_list(value)
 
+ACCESS_CONTROL_ALLOW_METHODS = b'access-control-allow-methods'
 
-# Access-Control-Allow-Methods
-
-_PARSERS[b'access-control-allow-methods'] = _Parser(
-    _parse_comma_separated_list, _MergeType.NONE)
-
+_PARSERS[ACCESS_CONTROL_ALLOW_METHODS] = _Parser(
+    _parse_comma_separated_list,
+    _MergeType.NONE
+)
 
 def access_control_allow_methods(
         headers: Iterable[Tuple[bytes, bytes]],
@@ -565,15 +546,12 @@ def access_control_allow_methods(
         Optional[List[bytes]]: A list of the allowed methods, or '*' for all
             methods.
     """
-    value = find(b'access-control-allow-methods', headers)
+    value = find(ACCESS_CONTROL_ALLOW_METHODS, headers)
     return default if value is None else _parse_comma_separated_list(value)
 
+ACCESS_CONTROL_ALLOW_ORIGIN = b'access-control-allow-origin'
 
-# Access-Control-Allow-Origin
-
-_PARSERS[b'access-control-allow-origin'] = _Parser(
-    _pass_through, _MergeType.NONE)
-
+_PARSERS[ACCESS_CONTROL_ALLOW_ORIGIN] = _Parser(_pass_through, _MergeType.NONE)
 
 def access_control_allow_origin(
         headers: Iterable[Tuple[bytes, bytes]],
@@ -591,11 +569,10 @@ def access_control_allow_origin(
     Returns:
         Optional[bytes]: The origin or '*' for all origins, or 'null'
     """
-    value = find(b'access-control-allow-origin', headers)
+    value = find(ACCESS_CONTROL_ALLOW_ORIGIN, headers)
     return default if value is None else value
 
-
-# Access-Control-Expose-Headers
+ACCESS_CONTROL_EXPOSE_HEADERS = b'access-control-expose-headers'
 
 def _parse_access_control_expose_headers(
         value: bytes,
@@ -615,9 +592,10 @@ def _parse_access_control_expose_headers(
     return headers
 
 
-_PARSERS[b'access-control-expose-headers'] = _Parser(
-    _parse_access_control_expose_headers, _MergeType.NONE)
-
+_PARSERS[ACCESS_CONTROL_EXPOSE_HEADERS] = _Parser(
+    _parse_access_control_expose_headers,
+    _MergeType.NONE
+)
 
 def access_control_expose_headers(
         headers: Iterable[Tuple[bytes, bytes]],
@@ -637,17 +615,15 @@ def access_control_expose_headers(
     Returns:
         Optional[List[bytes]]: The headers to expose.
     """
-    value = find(b'access-control-expose-headers', headers)
+    value = find(ACCESS_CONTROL_EXPOSE_HEADERS, headers)
     return default if value is None else _parse_access_control_expose_headers(
         value,
         add_simple_response_headers=add_simple_response_headers
     )
 
-# Access-Control-Max-Age
+ACCESS_CONTROL_MAX_AGE = b'access-control-max-age'
 
-
-_PARSERS[b'access-control-max-age'] = _Parser(_parse_int, _MergeType.NONE)
-
+_PARSERS[ACCESS_CONTROL_MAX_AGE] = _Parser(_parse_int, _MergeType.NONE)
 
 def access_control_max_age(
         headers: Iterable[Tuple[bytes, bytes]],
@@ -667,15 +643,13 @@ def access_control_max_age(
     Returns:
         Optional[int]: The number of seconds
     """
-    value = find(b'access-control-max-age', headers)
+    value = find(ACCESS_CONTROL_MAX_AGE, headers)
     return default if value is None else _parse_int(value)
 
-# Access-Control-Request-Headers
+ACCESS_CONTROL_REQUEST_HEADERS = b'access-control-request-headers'
 
-
-_PARSERS[b'access-control-request-headers'] = _Parser(
+_PARSERS[ACCESS_CONTROL_REQUEST_HEADERS] = _Parser(
     _parse_comma_separated_list, _MergeType.NONE)
-
 
 def access_control_request_headers(
         headers: Iterable[Tuple[bytes, bytes]],
@@ -694,15 +668,13 @@ def access_control_request_headers(
     Returns:
         Optional[List[bytes]]: The request headers
     """
-    value = find(b'access-control-request-headers', headers)
+    value = find(ACCESS_CONTROL_REQUEST_HEADERS, headers)
     return default if value is None else _parse_comma_separated_list(value)
 
-# Access-Control-Request-Method
+ACCESS_CONTROL_REQUEST_METHOD = b'access-control-request-method'
 
-
-_PARSERS[b'access-control-request-method'] = _Parser(
+_PARSERS[ACCESS_CONTROL_REQUEST_METHOD] = _Parser(
     _pass_through, _MergeType.NONE)
-
 
 def access_control_request_method(
         headers: Iterable[Tuple[bytes, bytes]],
@@ -723,14 +695,12 @@ def access_control_request_method(
     Returns:
         Optional[bytes]: The method
     """
-    value = find(b'access-control-request-method', headers)
+    value = find(ACCESS_CONTROL_REQUEST_METHOD, headers)
     return default if value is None else _pass_through(value)
 
-# Age
+AGE = b'age'
 
-
-_PARSERS[b'age'] = _Parser(_parse_int, _MergeType.NONE)
-
+_PARSERS[AGE] = _Parser(_parse_int, _MergeType.NONE)
 
 def age(
         headers: Iterable[Tuple[bytes, bytes]],
@@ -747,14 +717,12 @@ def age(
     Returns:
         Optional[int]: The time in seconds.
     """
-    value = find(b'age', headers)
+    value = find(AGE, headers)
     return default if value is None else _parse_int(value)
 
-# Allow
-
+ALLOW = b'allow'
 
 _PARSERS[b'allow'] = _Parser(_parse_comma_separated_list, _MergeType.NONE)
-
 
 def allow(
         headers: Iterable[Tuple[bytes, bytes]],
@@ -771,17 +739,16 @@ def allow(
     Returns:
         Optional[List[bytes]]: A list of methods
     """
-    value = find(b'allow', headers)
+    value = find(ALLOW, headers)
     return default if value is None else _parse_comma_separated_list(value)
 
+AUTHORIZATION = b'authorization'
 
 def _parse_authorization(value: bytes) -> Tuple[bytes, bytes]:
     auth_type, _, credentials = value.partition(b' ')
     return auth_type.strip(), credentials
 
-
-_PARSERS[b'authorization'] = _Parser(_parse_authorization, _MergeType.NONE)
-
+_PARSERS[AUTHORIZATION] = _Parser(_parse_authorization, _MergeType.NONE)
 
 def authorization(
         headers: Iterable[Tuple[bytes, bytes]],
@@ -800,21 +767,19 @@ def authorization(
     Returns:
         Optional[Tuple[bytes, bytes]]: The type and credentials.
     """
-    value = find(b'authorization', headers)
+    value = find(AUTHORIZATION, headers)
     return default if value is None else _parse_authorization(value)
 
-# Cache-Control
-
+CACHE_CONTROL = b'cache-control'
 
 def _parse_cache_control(value: bytes) -> Mapping[bytes, Optional[int]]:
     return {
         name.strip(): int(rest) if sep == b'=' else None
-        for name, sep, rest in [item.partition(b'=') for item in value.split(b',')]
+        for name, sep, rest in [item.partition(b'=')
+        for item in value.split(b',')]
     }
 
-
-_PARSERS[b'cache-control'] = _Parser(_parse_cache_control, _MergeType.NONE)
-
+_PARSERS[CACHE_CONTROL] = _Parser(_parse_cache_control, _MergeType.NONE)
 
 def cache_control(
         headers: Iterable[Tuple[bytes, bytes]],
@@ -835,15 +800,13 @@ def cache_control(
         Optional[Mapping[bytes, Optional[int]]]: A dictionary of the directives
             and values.
     """
-    value = find(b'cache-control', headers)
+    value = find(CACHE_CONTROL, headers)
     return default if value is None else _parse_cache_control(value)
 
+CLEAR_SITE_DATA = b'clear-site-data'
 
-# Clear-Site-Data
-
-_PARSERS[b'clear-site-data'] = _Parser(
+_PARSERS[CLEAR_SITE_DATA] = _Parser(
     _parse_comma_separated_list, _MergeType.NONE)
-
 
 def clear_site_data(
         headers: Iterable[Tuple[bytes, bytes]],
@@ -862,14 +825,12 @@ def clear_site_data(
     Returns:
         Optional[List[bytes]]: A list of the directives.
     """
-    value = find(b'clear-site-data', headers)
+    value = find(CLEAR_SITE_DATA, headers)
     return default if value is None else _parse_comma_separated_list(value)
 
+CONNECTION = b'connection'
 
-# Connection
-
-_PARSERS[b'connection'] = _Parser(_pass_through, _MergeType.NONE)
-
+_PARSERS[CONNECTION] = _Parser(_pass_through, _MergeType.NONE)
 
 def connection(
         headers: Iterable[Tuple[bytes, bytes]],
@@ -889,11 +850,10 @@ def connection(
     Returns:
         Optional[bytes]: The value
     """
-    value = find(b'connection', headers)
+    value = find(CONNECTION, headers)
     return default if value is None else value
 
-# Content-Disposition
-
+CONTENT_DISPOSITION = b'content-disposition'
 
 def _parse_content_disposition(
         value: bytes
@@ -906,10 +866,8 @@ def _parse_content_disposition(
 
     return media_type, parameters
 
-
-_PARSERS[b'content-disposition'] = _Parser(
+_PARSERS[CONTENT_DISPOSITION] = _Parser(
     _parse_content_disposition, _MergeType.NONE)
-
 
 def content_disposition(
         headers: Iterable[Tuple[bytes, bytes]],
@@ -927,11 +885,10 @@ def content_disposition(
         Optional[Tuple[bytes, Optional[Mapping[bytes, bytes]]]]: A tuple of the
             media type and a mapping of the parameters.
     """
-    value = find(b'content-disposition', headers)
+    value = find(CONTENT_DISPOSITION, headers)
     return default if value is None else _parse_content_disposition(value)
 
-# Content-Encoding
-
+CONTENT_ENCODING = b'content-encoding'
 
 def _parse_content_encoding(value: bytes, *, add_identity: bool = False) -> List[bytes]:
     encodings = value.split(b', ')
@@ -941,10 +898,10 @@ def _parse_content_encoding(value: bytes, *, add_identity: bool = False) -> List
 
     return encodings
 
-
-_PARSERS[b'content-encoding'] = _Parser(
-    _parse_content_encoding, _MergeType.NONE)
-
+_PARSERS[CONTENT_ENCODING] = _Parser(
+    _parse_content_encoding,
+    _MergeType.NONE
+)
 
 def content_encoding(
         headers: Iterable[Tuple[bytes, bytes]],
@@ -965,18 +922,17 @@ def content_encoding(
     Returns:
         Optional[List[bytes]]: The list of content encodings.
     """
-    value = find(b'content-encoding', headers)
+    value = find(CONTENT_ENCODING, headers)
     return default if value is None else _parse_content_encoding(
         value,
         add_identity=add_identity
     )
 
+CONTENT_LANGUAGE = b'content-language'
 
-# Content-Language
-
-_PARSERS[b'content-language'] = _Parser(
-    _parse_comma_separated_list, _MergeType.NONE)
-
+_PARSERS[CONTENT_LANGUAGE] = _Parser(
+    _parse_comma_separated_list, _MergeType.NONE
+)
 
 def content_language(
         headers: Iterable[Tuple[bytes, bytes]],
@@ -995,14 +951,12 @@ def content_language(
     Returns:
         Optional[List[bytes]]: The language.
     """
-    value = find(b'content-language', headers)
+    value = find(CONTENT_LANGUAGE, headers)
     return default if value is None else _parse_comma_separated_list(value)
 
+CONTENT_LENGTH = b'content-length'
 
-# Content-Length
-
-_PARSERS[b'content-length'] = _Parser(_parse_int, _MergeType.NONE)
-
+_PARSERS[CONTENT_LENGTH] = _Parser(_parse_int, _MergeType.NONE)
 
 def content_length(
         headers: Iterable[Tuple[bytes, bytes]],
@@ -1019,14 +973,12 @@ def content_length(
     Returns:
         Optional[int]: The length as an integer, or the default.
     """
-    value = find(b'content-length', headers)
+    value = find(CONTENT_LENGTH, headers)
     return default if value is None else _parse_int(value)
 
-# Content-Location
+CONTENT_LOCATION = b'content-location'
 
-
-_PARSERS[b'content-location'] = _Parser(_pass_through, _MergeType.NONE)
-
+_PARSERS[CONTENT_LOCATION] = _Parser(_pass_through, _MergeType.NONE)
 
 def content_location(
         headers: Iterable[Tuple[bytes, bytes]],
@@ -1045,10 +997,9 @@ def content_location(
     Returns:
         Optional[bytes]: The location, or the default.
     """
-    return find(b'content-location', headers, default=default)
+    return find(CONTENT_LOCATION, headers, default=default)
 
-# Content-Range
-
+CONTENT_RANGE = b'content-range'
 
 def _parse_content_range(
         value: bytes
@@ -1063,9 +1014,7 @@ def _parse_content_range(
     size = None if size_.strip() == b'*' else int(size_)
     return unit, from_to, size
 
-
-_PARSERS[b'content-range'] = _Parser(_parse_content_range, _MergeType.NONE)
-
+_PARSERS[CONTENT_RANGE] = _Parser(_parse_content_range, _MergeType.NONE)
 
 def content_range(
         headers: Iterable[Tuple[bytes, bytes]],
@@ -1084,11 +1033,10 @@ def content_range(
         Optional[Tuple[bytes, Optional[Tuple[int, int]], Optional[int]]]: The
             content-range header if found, or the default.
     """
-    value = find(b'content-range', headers)
+    value = find(CONTENT_RANGE, headers)
     return default if value is None else _parse_content_range(value)
 
-# Content-Security-Policy
-
+CONTENT_SECURITY_POLICY = b'content-security-policy'
 
 def _parse_content_security_policy(value: bytes) -> List[Tuple[bytes, List[bytes]]]:
     return [
@@ -1100,10 +1048,8 @@ def _parse_content_security_policy(value: bytes) -> List[Tuple[bytes, List[bytes
         if sep
     ]
 
-
-_PARSERS[b'content-security-policy'] = _Parser(
+_PARSERS[CONTENT_SECURITY_POLICY] = _Parser(
     _parse_content_security_policy, _MergeType.CONCAT)
-
 
 def content_security_policy(
         headers: Iterable[Tuple[bytes, bytes]],
@@ -1124,17 +1070,15 @@ def content_security_policy(
     Returns:
         Optional[List[Tuple[bytes, List[bytes]]]]: The policy or the default.
     """
-    value = find(b'content-security-policy', headers)
+    value = find(CONTENT_SECURITY_POLICY, headers)
     return default if value is None else _parse_content_security_policy(value)
 
-# Content-Security-Policy-Report-Only
+CONTENT_SECURITY_POLICY_REPORT_ONLY = b'content-security-policy-report-only'
 
-
-_PARSERS[b'content-security-policy-report-only'] = _Parser(
+_PARSERS[CONTENT_SECURITY_POLICY_REPORT_ONLY] = _Parser(
     _parse_content_security_policy,
     _MergeType.CONCAT
 )
-
 
 def content_security_policy_report_only(
         headers: Iterable[Tuple[bytes, bytes]],
@@ -1154,11 +1098,10 @@ def content_security_policy_report_only(
     Returns:
         Optional[List[Tuple[bytes, List[bytes]]]]: The policy, or the default.
     """
-    value = find(b'content-security-policy-report-only', headers)
+    value = find(CONTENT_SECURITY_POLICY_REPORT_ONLY, headers)
     return default if value is None else _parse_content_security_policy(value)
 
-# Content-Type
-
+CONTENT_TYPE = b'content-type'
 
 def _parse_content_type(
         value: bytes
@@ -1166,14 +1109,14 @@ def _parse_content_type(
     media_type, sep, rest = value.partition(b';')
     parameters = {
         first.strip(): rest.strip()
-        for first, sep, rest in [x.partition(b'=') for x in rest.split(b';')] if first
+        for first, sep, rest in [x.partition(b'=')
+        for x in rest.split(b';')]
+        if first
     } if sep == b';' else None
 
     return media_type, parameters
 
-
-_PARSERS[b'content-type'] = _Parser(_parse_content_type, _MergeType.NONE)
-
+_PARSERS[CONTENT_TYPE] = _Parser(_parse_content_type, _MergeType.NONE)
 
 def content_type(
         headers: Iterable[Tuple[bytes, bytes]],
@@ -1191,11 +1134,10 @@ def content_type(
         Optional[Tuple[bytes, Optional[Mapping[bytes, bytes]]]]: A tuple of the
             media type and a mapping of the parameters or the default if absent.
     """
-    value = find(b'content-type', headers)
+    value = find(CONTENT_TYPE, headers)
     return default if value is None else _parse_content_type(value)
 
-# Cookie
-
+COOKIE = b'cookie'
 
 def _parse_cookie(value: bytes) -> Mapping[bytes, List[bytes]]:
     cookies: MutableMapping[bytes, List[bytes]] = dict()
@@ -1203,9 +1145,7 @@ def _parse_cookie(value: bytes) -> Mapping[bytes, List[bytes]]:
         cookies.setdefault(name, []).extend(content)
     return cookies
 
-
-_PARSERS[b'cookie'] = _Parser(_parse_cookie, _MergeType.EXTEND)
-
+_PARSERS[COOKIE] = _Parser(_parse_cookie, _MergeType.EXTEND)
 
 def cookie(headers: Iterable[Tuple[bytes, bytes]]) -> Mapping[bytes, List[bytes]]:
     """Returns the cookies as a name-value mapping.
@@ -1217,19 +1157,17 @@ def cookie(headers: Iterable[Tuple[bytes, bytes]]) -> Mapping[bytes, List[bytes]
         Mapping[bytes, List[bytes]]: The cookies as a name-value mapping.
     """
     cookies: MutableMapping[bytes, List[bytes]] = dict()
-    for value in find_all(b'cookie', headers):
+    for value in find_all(COOKIE, headers):
         for name, content in _parse_cookie(value).items():
             cookies.setdefault(name, []).extend(content)
     return cookies
 
-# Cross-Origin-Resource-Policy
+CROSS_ORIGIN_RESOURCE_POLICY = b'cross-origin-resource-policy'
 
-
-_PARSERS[b'cross-origin-resource-policy'] = _Parser(
+_PARSERS[CROSS_ORIGIN_RESOURCE_POLICY] = _Parser(
     _pass_through,
     _MergeType.NONE
 )
-
 
 def cross_origin_resource_policy(
         headers: Iterable[Tuple[bytes, bytes]],
@@ -1248,14 +1186,12 @@ def cross_origin_resource_policy(
     Returns:
         Optional[bytes]: The policy if present or the default.
     """
-    value = find(b'cross-origin-resource-policy', headers)
+    value = find(CROSS_ORIGIN_RESOURCE_POLICY, headers)
     return default if value is None else value
 
+DATE = b'date'
 
-# Date
-
-_PARSERS[b'date'] = _Parser(_parse_date, _MergeType.NONE)
-
+_PARSERS[DATE] = _Parser(_parse_date, _MergeType.NONE)
 
 def date(
         headers: Iterable[Tuple[bytes, bytes]],
@@ -1273,13 +1209,11 @@ def date(
     Returns:
         Optional[datetime]: The date and time at which the message was originated
     """
-    return find_date(b'date', headers, default=default)
+    return find_date(DATE, headers, default=default)
 
-# DNT
+DNT = b'DNT'
 
-
-_PARSERS[b'DNT'] = _Parser(_parse_int, _MergeType.NONE)
-
+_PARSERS[DNT] = _Parser(_parse_int, _MergeType.NONE)
 
 def dnt(
         headers: Iterable[Tuple[bytes, bytes]],
@@ -1298,14 +1232,12 @@ def dnt(
     Returns:
         Optional[int]: 0 for allow tracking, 1 for deny tracking or the default.
     """
-    value = find(b'DNT', headers)
+    value = find(DNT, headers)
     return default if value is None else _parse_int(value)
 
-# DPR
+DPR = b'DPR'
 
-
-_PARSERS[b'DPR'] = _Parser(_parse_float, _MergeType.NONE)
-
+_PARSERS[DPR] = _Parser(_parse_float, _MergeType.NONE)
 
 def dpr(
         headers: Iterable[Tuple[bytes, bytes]],
@@ -1324,14 +1256,12 @@ def dpr(
     Returns:
         Optional[float]: The device pixel ratio if present, or the default value.
     """
-    value = find(b'DPR', headers)
+    value = find(DPR, headers)
     return default if value is None else _parse_float(value)
 
-# Device-Memory
+DEVICE_MEMORY = b'device-memory'
 
-
-_PARSERS[b'device-memory'] = _Parser(_parse_float, _MergeType.NONE)
-
+_PARSERS[DEVICE_MEMORY] = _Parser(_parse_float, _MergeType.NONE)
 
 def device_memory(
         headers: Iterable[Tuple[bytes, bytes]],
@@ -1350,14 +1280,12 @@ def device_memory(
     Returns:
         Optional[float]: The device memory
     """
-    value = find(b'device-memory', headers)
+    value = find(DEVICE_MEMORY, headers)
     return default if value is None else _parse_float(value)
 
+EXPECT = b'expect'
 
-# Expect
-
-_PARSERS[b'expect'] = _Parser(_pass_through, _MergeType.NONE)
-
+_PARSERS[EXPECT] = _Parser(_pass_through, _MergeType.NONE)
 
 def expect(
         headers: Iterable[Tuple[bytes, bytes]],
@@ -1374,14 +1302,12 @@ def expect(
     Returns:
         Optional[bytes]: The expect directive if present, or the default value.
     """
-    value = find(b'expect', headers)
+    value = find(EXPECT, headers)
     return default if value is None else value
 
-# Expires
-
+EXPIRES = b'expires'
 
 _PARSERS[b'expires'] = _Parser(_parse_date, _MergeType.NONE)
-
 
 def expires(
         headers: Iterable[Tuple[bytes, bytes]],
@@ -1400,23 +1326,19 @@ def expires(
         Optional[datetime]: The date/time after which the response is considered
             stale, or the default value.
     """
-    return find_date(b'expires', headers, default=default)
+    return find_date(EXPIRES, headers, default=default)
 
-# From
-
+FROM = b'from'
 
 _PARSERS[b'from'] = _Parser(_pass_through, _MergeType.NONE)
 
-# Host
-
+HOST = b'host'
 
 def _parse_host(value: bytes) -> Tuple[bytes, Optional[int]]:
     host_, sep, port = value.partition(b':')
     return (host_, None) if not sep else (host_, int(port))
 
-
-_PARSERS[b'host'] = _Parser(_parse_host, _MergeType.NONE)
-
+_PARSERS[HOST] = _Parser(_parse_host, _MergeType.NONE)
 
 def host(
         headers: Iterable[Tuple[bytes, bytes]],
@@ -1433,14 +1355,12 @@ def host(
     Returns:
         Optional[Tuple[bytes, Optional[int]]]: The host as a name, port tuple.
     """
-    value = find(b'host', headers)
+    value = find(HOST, headers)
     return default if value is None else _parse_host(value)
 
-# If-Modified-Since
+IF_MODIFIED_SINCE = b'if-modified-since'
 
-
-_PARSERS[b'if-modified-since'] = _Parser(_parse_date, _MergeType.NONE)
-
+_PARSERS[IF_MODIFIED_SINCE] = _Parser(_parse_date, _MergeType.NONE)
 
 def if_modified_since(
         headers: Iterable[Tuple[bytes, bytes]],
@@ -1463,13 +1383,11 @@ def if_modified_since(
         Optional[datetime]: The timestamp if present, otherwise the default
             value.
     """
-    return find_date(b'if-modified-since', headers, default=default)
+    return find_date(IF_MODIFIED_SINCE, headers, default=default)
 
-# Last-Modified
+LAST_MODIFIED = b'last-modified'
 
-
-_PARSERS[b'last-modified'] = _Parser(_parse_date, _MergeType.NONE)
-
+_PARSERS[LAST_MODIFIED] = _Parser(_parse_date, _MergeType.NONE)
 
 def last_modified(
         headers: Iterable[Tuple[bytes, bytes]],
@@ -1492,13 +1410,11 @@ def last_modified(
         Optional[datetime]: The timestamp if present, otherwise the default
             value.
     """
-    return find_date(b'last-modified', headers, default=default)
+    return find_date(LAST_MODIFIED, headers, default=default)
 
+LOCATION = b'location'
 
-# Location
-
-_PARSERS[b'location'] = _Parser(_pass_through, _MergeType.NONE)
-
+_PARSERS[LOCATION] = _Parser(_pass_through, _MergeType.NONE)
 
 def location(
         headers: Iterable[Tuple[bytes, bytes]],
@@ -1517,14 +1433,12 @@ def location(
     Returns:
         Optional[bytes]: The redirect location
     """
-    value = find(b'location', headers)
+    value = find(LOCATION, headers)
     return default if value is None else value
 
-# Origin
+ORIGIN = b'origin'
 
-
-_PARSERS[b'origin'] = _Parser(_pass_through, _MergeType.NONE)
-
+_PARSERS[ORIGIN] = _Parser(_pass_through, _MergeType.NONE)
 
 def origin(
         headers: Iterable[Tuple[bytes, bytes]],
@@ -1544,11 +1458,10 @@ def origin(
     Returns:
         Optional[bytes]: The origin if present, otherwise the default value.
     """
-    value = find(b'origin', headers)
+    value = find(ORIGIN, headers)
     return default if value is None else value
 
-# Proxy-Authorisation
-
+PROXY_AUTHORIZATION = b'proxy-authorization'
 
 def proxy_authorization(
         headers: Iterable[Tuple[bytes, bytes]],
@@ -1568,14 +1481,12 @@ def proxy_authorization(
     Returns:
         Optional[Tuple[bytes, bytes]]: The type and credentials.
     """
-    value = find(b'proxy-authorization', headers)
+    value = find(PROXY_AUTHORIZATION, headers)
     return default if value is None else _parse_authorization(value)
 
-# Referer
+REFERER = b'referer'
 
-
-_PARSERS[b'referer'] = _Parser(_pass_through, _MergeType.NONE)
-
+_PARSERS[REFERER] = _Parser(_pass_through, _MergeType.NONE)
 
 def referer(
         headers: Iterable[Tuple[bytes, bytes]],
@@ -1595,14 +1506,12 @@ def referer(
     Returns:
         Optional[bytes]: The referer if present; otherwise the default value.
     """
-    value = find(b'referer', headers)
+    value = find(REFERER, headers)
     return default if value is None else value
 
-# Server
+SERVER = b'server'
 
-
-_PARSERS[b'server'] = _Parser(_pass_through, _MergeType.NONE)
-
+_PARSERS[SERVER] = _Parser(_pass_through, _MergeType.NONE)
 
 def server(
         headers: Iterable[Tuple[bytes, bytes]],
@@ -1620,16 +1529,16 @@ def server(
     Returns:
         Optional[bytes]: The product directive
     """
-    value = find(b'server', headers)
+    value = find(SERVER, headers)
     return default if value is None else value
 
-# Set-Cookie
+SET_COOKIE = b'set-cookie'
 
+_PARSERS[SET_COOKIE] = _Parser(decode_set_cookie, _MergeType.APPEND)
 
-_PARSERS[b'set-cookie'] = _Parser(decode_set_cookie, _MergeType.APPEND)
-
-
-def set_cookie(headers: Iterable[Tuple[bytes, bytes]]) -> Mapping[bytes, List[Mapping[str, Any]]]:
+def set_cookie(
+        headers: Iterable[Tuple[bytes, bytes]]
+) -> Mapping[bytes, List[Mapping[str, Any]]]:
     """Returns the cookies as a name-value mapping.
 
     Args:
@@ -1640,20 +1549,17 @@ def set_cookie(headers: Iterable[Tuple[bytes, bytes]]) -> Mapping[bytes, List[Ma
             mapping.
     """
     set_cookies: MutableMapping[bytes, List[Mapping[str, Any]]] = dict()
-    for header in find_all(b'set-cookie', headers):
+    for header in find_all(SET_COOKIE, headers):
         decoded = decode_set_cookie(header)
         set_cookies.setdefault(decoded['name'], []).append(decoded)
     return set_cookies
 
-
-# Vary
+VARY = b'vary'
 
 def _parse_vary(value: bytes) -> List[bytes]:
     return value.split(b', ')
 
-
-_PARSERS[b'vary'] = _Parser(_parse_vary, _MergeType.NONE)
-
+_PARSERS[VARY] = _Parser(_parse_vary, _MergeType.NONE)
 
 def vary(
         headers: Iterable[Tuple[bytes, bytes]],
@@ -1671,7 +1577,7 @@ def vary(
         Optional[List[bytes]]: A list of the vary headers if present; otherwise
             the default value.
     """
-    value = find(b'vary', headers)
+    value = find(VARY, headers)
     return default if value is None else _parse_vary(value)
 
 

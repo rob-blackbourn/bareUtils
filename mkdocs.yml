@@ -6,48 +6,47 @@ repo_url: https://github.com/rob-blackbourn/bareUtils
 edit_uri: ""
 
 theme:
-    name: "material"
-    logo: images/peach.svg
-    favicon: images/favicon.ico
+  name: "material"
+  logo: images/peach.svg
+  favicon: images/favicon.ico
 
 nav:
-    - index.md
-    - User Guide:
-          - user-guide/getting-started.md
-          - user-guide/installation.md
-          - user-guide/headers.md
-          - user-guide/response-codes.md
-          - user-guide/cookies.md
-          - user-guide/streaming-content.md
-          - user-guide/compression.md
-          - user-guide/unpacking.md
-    - API:
-          - bareutils.cookies: api/bareutils.cookies.md
-          - bareutils.header: api/bareutils.header.md
-          - bareutils.response_code: api/bareutils.response_code.md
-          - bareutils.responses: api/bareutils.responses.md
-          - bareutils.streaming: api/bareutils.streaming.md
-          - bareutils.unpacking: api/bareutils.unpacking.md
-          - bareutils.compression.middleware: api/bareutils.compression.middleware.md
-          - bareutils.compression.streaming: api/bareutils.compression.streaming.md
+  - index.md
+  - User Guide:
+      - user-guide/getting-started.md
+      - user-guide/installation.md
+      - user-guide/headers.md
+      - user-guide/response-codes.md
+      - user-guide/cookies.md
+      - user-guide/streaming-content.md
+      - user-guide/compression.md
+      - user-guide/unpacking.md
+  - API:
+      - bareutils.cookies: api/bareutils.cookies.md
+      - bareutils.header: api/bareutils.header.md
+      - bareutils.response_code: api/bareutils.response_code.md
+      - bareutils.responses: api/bareutils.responses.md
+      - bareutils.streaming: api/bareutils.streaming.md
+      - bareutils.unpacking: api/bareutils.unpacking.md
+      - bareutils.compression: api/bareutils.compression.md
 
 markdown_extensions:
-    - admonition
-    - codehilite:
-          guess_lang: false
-    - jetblack_markdown.autodoc:
-          class_from_init: true
-          ignore_dunder: true
-          ignore_private: true
-          ignore_all: false
-          ignore_inherited: false
-          follow_module_tree: false
-          prefer_docstring: true
-    - toc:
-          permalink: true
+  - admonition
+  - codehilite:
+      guess_lang: false
+  - jetblack_markdown.autodoc:
+      class_from_init: true
+      ignore_dunder: true
+      ignore_private: true
+      ignore_all: false
+      ignore_inherited: false
+      follow_module_tree: false
+      prefer_docstring: true
+  - toc:
+      permalink: true
 
 extra_css:
-    - css/custom.css
+  - css/custom.css
 
 extra:
   version:

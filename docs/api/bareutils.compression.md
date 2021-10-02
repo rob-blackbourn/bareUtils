@@ -1,0 +1,1 @@
+@[bareutils.compression]
