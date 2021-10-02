@@ -25,7 +25,6 @@ nav:
       - bareutils.cookies: api/bareutils.cookies.md
       - bareutils.header: api/bareutils.header.md
       - bareutils.response_code: api/bareutils.response_code.md
-      - bareutils.responses: api/bareutils.responses.md
       - bareutils.streaming: api/bareutils.streaming.md
       - bareutils.unpacking: api/bareutils.unpacking.md
       - bareutils.compression: api/bareutils.compression.md
