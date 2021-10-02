@@ -1,1 +1,0 @@
-@[bareutils.compression.streaming]

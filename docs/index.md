@@ -6,6 +6,4 @@ projects and the
 [bareClient](https://github.com/rob-blackbourn/bareClient)
 project.
 
-This module depends on
-[bareTypes](https://github.com/rob-blackbourn/bareTypes)
-which has no dependencies.
+It requires Python3.7 or later, and has no dependencies.

@@ -17,9 +17,10 @@ The most common functions are:
 For example to read a text stream from a request handler:
 
 ```python
-from bareutils.streaming import text_reader
+from bareasgi import HttpRequest, HttpResponse
+from bareutils import text_reader
 
-async def handle_request(scope, info, matches, content):
+async def handle_request(request: HttpRequest) -> HttpResponse:
     text = await text_reader(content)
-    return 200, [(b'content-type', b'text/plain')], text_write(text.lower())
+    return HttpResponse(200, [(b'content-type', b'text/plain')], text_write(text.lower()))
 ```

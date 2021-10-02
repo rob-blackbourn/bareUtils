@@ -2,9 +2,7 @@
 
 from email.parser import BytesFeedParser
 from email.message import Message
-from typing import List, Tuple, Union
-
-from baretypes import Content
+from typing import AsyncIterable, List, Tuple, Union
 
 MessageParams = List[Tuple[str, str]]
 MessagePayload = Union[List[Message], str, bytes, None]
@@ -12,13 +10,13 @@ MessagePayload = Union[List[Message], str, bytes, None]
 
 async def unpack_multipart_form_data(
         content_type: bytes,
-        content: Content
+        content: AsyncIterable[bytes]
 ) -> List[Tuple[MessageParams, MessagePayload]]:
     """Unpack multipart form data
 
     Args:
         content_type (bytes): The 'content-type' header
-        content (Content): The content to parse.
+        content (AsyncIterable[bytes]): The content to parse.
 
     Raises:
         AssertionError: When the problems were found with the data

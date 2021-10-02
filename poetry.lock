@@ -47,14 +47,6 @@ pycodestyle = ">=2.7.0"
 toml = "*"
 
 [[package]]
-name = "baretypes"
-version = "3.6.4"
-description = "Types for bareASGI and bareClient"
-category = "main"
-optional = false
-python-versions = ">=3.7,<4.0"
-
-[[package]]
 name = "click"
 version = "8.0.1"
 description = "Composable command line interface toolkit"
@@ -558,7 +550,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytes
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "ce994bd1a6f5be2a461faa4e7d6975c9b423dae5b8ae4fa1a286b0c9a91cc659"
+content-hash = "1d3b8fcfee2c23bef9d587baf88074b3e20990b26dc046acded8aa69d9565209"
 
 [metadata.files]
 astroid = [
@@ -576,10 +568,6 @@ attrs = [
 autopep8 = [
     {file = "autopep8-1.5.7-py2.py3-none-any.whl", hash = "sha256:aa213493c30dcdac99537249ee65b24af0b2c29f2e83cd8b3f68760441ed0db9"},
     {file = "autopep8-1.5.7.tar.gz", hash = "sha256:276ced7e9e3cb22e5d7c14748384a5cf5d9002257c0ed50c0e075b68011bb6d0"},
-]
-baretypes = [
-    {file = "baretypes-3.6.4-py3-none-any.whl", hash = "sha256:563ebee21a2942f9fff6a7208a194fb3b6a68de86dff5dc31b144003badccc8d"},
-    {file = "baretypes-3.6.4.tar.gz", hash = "sha256:66339cbc1ce1fcae37848a56132a3929da93ba14530fe5fa3c3a1ca8da8ce04d"},
 ]
 click = [
     {file = "click-8.0.1-py3-none-any.whl", hash = "sha256:fba402a4a47334742d782209a7c79bc448911afe1149d07bdabdf480b3e2f4b6"},

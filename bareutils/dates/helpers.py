@@ -3,8 +3,8 @@
 from datetime import datetime
 from typing import Optional
 
-import bareutils.dates.rfc_7231 as rfc_7231
-import bareutils.dates.rfc_850 as rfc_850
+from . import rfc_7231
+from . import rfc_850
 
 
 def try_parse_date(value: str) -> Optional[datetime]:

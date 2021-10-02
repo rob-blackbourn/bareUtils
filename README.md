@@ -13,7 +13,3 @@ pip install bareutils
 ```
 
 This is a Python3.7 and later package.
-
-It has dependencies on:
-
-* [bareTypes](https://github.com/rob-blackbourn/bareTypes)
