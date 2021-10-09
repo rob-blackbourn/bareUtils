@@ -44,28 +44,45 @@ def test_accept():
         [
             (b'accept', b'application/json')
         ]
-    ) == {b'application/json': (b'q', 1.0)}
+    ) == {
+        b'application/json': {b'q': 1.0}
+    }
     assert header.accept([
         (
             b'accept',
             b'text/html, application/xhtml+xml, application/xml;q=0.9, */*;q=0.8'
         )
     ]) == {
-        b'text/html': (b'q', 1.0),
-        b'application/xhtml+xml': (b'q', 1.0),
-        b'application/xml': (b'q', 0.9),
-        b'*/*': (b'q', 0.8)
+        b'text/html': {b'q': 1.0},
+        b'application/xhtml+xml': {b'q': 1.0},
+        b'application/xml': {b'q': 0.9},
+        b'*/*': {b'q': 0.8}
     }
     assert header.accept([
         (b'accept', b'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3')
     ]) == {
-        b'text/html': (b'q', 1.0),
-        b'application/xhtml+xml': (b'q', 1.0),
-        b'application/xml': (b'q', 0.9),
-        b'image/webp': (b'q', 1.0),
-        b'image/apng': (b'q', 1.0),
-        b'*/*': (b'q', 0.8),
-        b'application/signed-exchange': (b'v', b'b3')
+        b'text/html': {b'q': 1.0},
+        b'application/xhtml+xml': {b'q': 1.0},
+        b'application/xml': {b'q': 0.9},
+        b'image/webp': {b'q': 1.0},
+        b'image/apng': {b'q': 1.0},
+        b'*/*': {b'q': 0.8},
+        b'application/signed-exchange': {b'v': b'b3'}
+    }
+    results = header.accept([
+        (b'accept', b'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9')
+    ])
+    assert header.accept([
+        (b'accept', b'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9')
+    ]) == {
+        b'text/html': {b'q': 1.0},
+        b'application/xhtml+xml': {b'q': 1.0},
+        b'application/xml': {b'q': 0.9},
+        b'image/avif': {b'q': 1.0},
+        b'image/webp': {b'q': 1.0},
+        b'image/apng': {b'q': 1.0},
+        b'*/*': {b'q': 0.8},
+        b'application/signed-exchange': {b'v': b'b3', b'q': 0.9}
     }
 
 
@@ -582,10 +599,10 @@ def test_collect():
             b'*': 0.5,
         },
         b'accept': {
-            b'text/html': (b'q', 1.0),
-            b'application/xhtml+xml': (b'q', 1.0),
-            b'application/xml': (b'q', 0.9),
-            b'*/*': (b'q', 0.8)
+            b'text/html': {b'q': 1.0},
+            b'application/xhtml+xml': {b'q': 1.0},
+            b'application/xml': {b'q': 0.9},
+            b'*/*': {b'q': 0.8}
         },
         b'authorization': (b'Basic', b'YWxhZGRpbjpvcGVuc2VzYW1l'),
         b'host': (b'developer.cdn.mozilla.net', None),

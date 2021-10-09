@@ -11,9 +11,11 @@
   "python.linting.mypyEnabled": true,
   "cSpell.words": [
     "afes",
+    "apng",
     "ASGI",
     "Authorisation",
     "autodoc",
+    "avif",
     "bareasgi",
     "bareutils",
     "codehilite",
@@ -38,6 +40,7 @@
     "UNPROCESSABLE",
     "WBITS",
     "wday",
+    "webp",
     "yday"
   ],
   "python.testing.unittestEnabled": false,

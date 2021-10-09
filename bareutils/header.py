@@ -182,12 +182,6 @@ def _parse_quality(value: bytes) -> Optional[float]:
         raise ValueError('expected "q"')
     return float(quality)
 
-def _parse_accept_quality(value: bytes) -> Tuple[bytes, Any]:
-    if value == b'':
-        return b'q', 1.0
-    name, quality = value.split(b'=')
-    return name, float(quality) if name == b'q' else quality
-
 def _parse_media_type_and_encoding(
         value: bytes
 ) -> Tuple[bytes, Optional[bytes]]:
@@ -202,18 +196,31 @@ def _parse_media_type_and_encoding(
 
 ACCEPT = b'accept'
 
+def _parse_accept_params(value: bytes) -> Mapping[bytes, Any]:
+    if value == b'':
+        return {b'q': 1.0}
+    return {
+        name.strip(): float(token.strip()) if name ==b'q' else token.strip()
+        for name, _sep, token in [
+            param.partition(b'=')
+            for param in value.split(b';')
+        ]
+    }
+
 def _parse_accept(
         value: bytes,
         *,
         add_wildcard: bool = False
-) -> Mapping[bytes, Tuple[bytes, Any]]:
+) -> Mapping[bytes, Mapping[bytes, Any]]:
     values = {
-        first: _parse_accept_quality(rest)
-        for first, sep, rest in [x.strip().partition(b';') for x in value.split(b',')]
+        media_type: _parse_accept_params(params)
+        for media_type, _sep, params in [
+            x.strip().partition(b';') for x in value.split(b',')
+        ]
     }
 
     if add_wildcard and b'*' not in values:
-        values[b'*'] = (b'q', 1.0)
+        values[b'*'] = {b'q': 1.0}
 
     return values
 
@@ -223,27 +230,27 @@ def accept(
         headers: Iterable[Tuple[bytes, bytes]],
         *,
         add_wildcard: bool = False,
-        default: Optional[Mapping[bytes, Tuple[bytes, Any]]] = None
-) -> Optional[Mapping[bytes, Tuple[bytes, Any]]]:
+        default: Optional[Mapping[bytes, Mapping[bytes, Any]]] = None
+) -> Optional[Mapping[bytes, Mapping[bytes, Any]]]:
     """Returns the accept header if it exists.
 
     Where quality is not given it defaults to 1.0.
 
     ```python
     >>> accept([(b'accept', b'text/html, application/xhtml+xml, application/xml;q=0.9, */*;q=0.8')])
-    {b'text/html': 1.0, b'application/xhtml+xml': 1.0, b'application/xml': 0.9, b'*/*': 0.8}
+    {b'text/html': {b'q': 1.0}, b'application/xhtml+xml': {b'q': 1.0}, b'application/xml': {b'q': 0.9}, b'*/*': {b'q': 0.8}}
     ```
 
     Args:
         headers (Iterable[Tuple[bytes, bytes]]): The headers
         add_wildcard (bool, optional): If true add the implicit wildcard '*'.
             Defaults to False.
-        default (Optional[Mapping[bytes, float]], optional): An optional
+        default (Optional[Mapping[bytes, Mapping[bytes, Any]]], optional): An optional
             default. Defaults to None.
 
     Returns:
-        Optional[Mapping[bytes, Tuple[bytes, Any]]]: A dictionary where the key
-            is media type and the value is quality.
+        Optional[Mapping[bytes, Mapping[bytes, Any]]]: A dictionary where the key
+            is media type and the value is a mapping of the parameters.
     """
     value = find(ACCEPT, headers)
     return default if value is None else _parse_accept(value, add_wildcard=add_wildcard)
@@ -1283,6 +1290,8 @@ def device_memory(
     value = find(DEVICE_MEMORY, headers)
     return default if value is None else _parse_float(value)
 
+ETAG = b'etag'
+
 EXPECT = b'expect'
 
 _PARSERS[EXPECT] = _Parser(_pass_through, _MergeType.NONE)
@@ -1384,6 +1393,8 @@ def if_modified_since(
             value.
     """
     return find_date(IF_MODIFIED_SINCE, headers, default=default)
+
+IF_NONE_MATCH = b'if-none-match'
 
 LAST_MODIFIED = b'last-modified'
 
@@ -1553,6 +1564,8 @@ def set_cookie(
         decoded = decode_set_cookie(header)
         set_cookies.setdefault(decoded['name'], []).append(decoded)
     return set_cookies
+
+TRANSFER_ENCODING = b'transfer-encoding'
 
 VARY = b'vary'
 
