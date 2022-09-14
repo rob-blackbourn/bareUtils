@@ -51,7 +51,7 @@ def encode_set_cookie(
     Returns:
         bytes: The set-cookie header
     """
-    if name.startswith(b'__Secure-') or name.startswith(b'__Host-') and not secure:
+    if not secure and (name.startswith(b'__Secure-') or name.startswith(b'__Host-')):
         raise RuntimeError(
             'Keys starting __Secure- or __Host- require the secure directive'
         )
