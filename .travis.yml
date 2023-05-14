@@ -9,4 +9,4 @@ install:
   - pip install tox
 
 script:
-  tox -v e py
+  tox -v -e py
