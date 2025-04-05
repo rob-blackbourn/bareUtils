@@ -2,18 +2,16 @@
 
 from datetime import datetime, timezone
 import re
-from typing import Optional
+
+from .constants import DAY_NAMES, MONTH_NAMES
 
 # 'Mon, 23-Mar-20 07:36:36 GMT'
 DATE_PATTERN = re.compile(
     r'^(Mon|Tue|Wed|Thu|Fri|Sat|Sun), (\d{2})-(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-(\d{2}) (\d{2}):(\d{2}):(\d{2}) GMT$'
 )
-DAY_NAMES = ("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
-MONTH_NAMES = ("Jan", "Feb", "Mar", "Apr", "May", "Jun",
-               "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
 
 
-def try_parse_date(value: str) -> Optional[datetime]:
+def try_parse_date(value: str) -> datetime | None:
     """Parse a date according to RFC 850.
 
     e.g. 'Mon, 23-Mar-20 07:36:36 GMT'
@@ -58,7 +56,7 @@ def format_date(value: datetime) -> str:
         day=DAY_NAMES[time_tuple.tm_wday],
         mday=time_tuple.tm_mday,
         mon=MONTH_NAMES[time_tuple.tm_mon - 1],
-        year=2000-time_tuple.tm_year,
+        year=time_tuple.tm_year % 100,
         hour=time_tuple.tm_hour,
         min=time_tuple.tm_min,
         sec=time_tuple.tm_sec

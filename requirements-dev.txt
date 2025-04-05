@@ -1,0 +1,7 @@
+autopep8
+coverage
+mypy
+pytest
+pytest-asyncio
+pylint
+types-setuptools

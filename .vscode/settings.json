@@ -2,8 +2,8 @@
   "editor.rulers": [80, 120],
   "[python]": {
     "gitlens.codeLens.symbolScopes": ["!Module"],
-    "editor.wordBasedSuggestions": false,
-    "editor.formatOnSave": false
+    "editor.wordBasedSuggestions": "off",
+    "editor.formatOnSave": true
   },
   "python.defaultInterpreterPath": ".venv/bin/python",
   "python.linting.pylintUseMinimalCheckers": false,
