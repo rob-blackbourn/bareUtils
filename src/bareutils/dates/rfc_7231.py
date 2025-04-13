@@ -1,4 +1,4 @@
-"""RFC7231"""
+"""RFC 7231"""
 
 from datetime import datetime, timezone
 import re

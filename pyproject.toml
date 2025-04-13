@@ -58,7 +58,7 @@ build-backend = "setuptools.build_meta"
 
 # pylint
 [tool.pylint.main]
-py-version = "3.12"
+py-version = "3.11"
 jobs = 4
 
 [tool.pylint.basic]

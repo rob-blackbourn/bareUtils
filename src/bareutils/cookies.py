@@ -140,7 +140,7 @@ def decode_cookies(cookies: bytes) -> Mapping[bytes, list[bytes]]:
     Returns:
         Mapping[bytes, list[bytes]]: The cookies
     """
-    result: MutableMapping[bytes, list[bytes]] = dict()
+    result: MutableMapping[bytes, list[bytes]] = {}
     for morsel in cookies.rstrip(b'; ').split(b'; '):
         name, _, value = morsel.partition(b'=')
         result.setdefault(name, []).append(value)

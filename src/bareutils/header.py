@@ -1255,7 +1255,7 @@ COOKIE = b'cookie'
 
 
 def _parse_cookie(value: bytes) -> Mapping[bytes, list[bytes]]:
-    cookies: MutableMapping[bytes, list[bytes]] = dict()
+    cookies: MutableMapping[bytes, list[bytes]] = {}
     for name, content in decode_cookies(value).items():
         cookies.setdefault(name, []).extend(content)
     return cookies
@@ -1273,7 +1273,7 @@ def cookie(headers: Iterable[tuple[bytes, bytes]]) -> Mapping[bytes, list[bytes]
     Returns:
         Mapping[bytes, list[bytes]]: The cookies as a name-value mapping.
     """
-    cookies: MutableMapping[bytes, list[bytes]] = dict()
+    cookies: MutableMapping[bytes, list[bytes]] = {}
     for value in find_all(COOKIE, headers):
         for name, content in _parse_cookie(value).items():
             cookies.setdefault(name, []).extend(content)
@@ -1703,7 +1703,7 @@ def set_cookie(
         Mapping[bytes, list[Mapping[str, Any]]]: The cookies as a name-value
             mapping.
     """
-    set_cookies: MutableMapping[bytes, list[Mapping[str, Any]]] = dict()
+    set_cookies: MutableMapping[bytes, list[Mapping[str, Any]]] = {}
     for header in find_all(SET_COOKIE, headers):
         decoded = decode_set_cookie(header)
         set_cookies.setdefault(decoded['name'], []).append(decoded)
@@ -1751,7 +1751,7 @@ def collect(headers: Iterable[tuple[bytes, bytes]]) -> dict[bytes, Any]:
     Returns:
         dict[bytes, Any]: A mapping of the parsed headers
     """
-    collection: dict[bytes, Any] = dict()
+    collection: dict[bytes, Any] = {}
     for name, value in headers:
         parser = _PARSERS.get(name, _DEFAULT_PARSER)
         if parser.merge_type == _MergeType.APPEND:
@@ -1762,7 +1762,7 @@ def collect(headers: Iterable[tuple[bytes, bytes]]) -> dict[bytes, Any]:
             collection.setdefault(name, []).extend(result)
         elif parser.merge_type == _MergeType.EXTEND:
             result = parser.parse(value)
-            dct = collection.setdefault(name, dict())
+            dct = collection.setdefault(name, {})
             for k, v in result.items():
                 dct.setdefault(k, []).extend(v)
         else:
