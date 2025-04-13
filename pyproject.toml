@@ -90,7 +90,7 @@ asyncio_default_test_loop_scope = "function"
 
 # mypy
 [tool.mypy]
-files = [ "bareutils", "tests" ]
+files = [ "src/bareutils", "tests" ]
 
 [[tool.mypy.overrides]]
 module = "pytest"
