@@ -6,4 +6,4 @@ projects and the
 [bareClient](https://github.com/rob-blackbourn/bareClient)
 project.
 
-It requires Python3.7 or later, and has no dependencies.
+It requires Python 3.11 or later, and has no dependencies.

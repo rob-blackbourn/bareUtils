@@ -5,13 +5,14 @@ description = "Utilities for bareASGI and bareClient"
 authors = [
     { name = "Rob Blackbourn", email = "rob.blackbourn@gmail.com" }
 ]
-requires-python = ">=3.12"
+requires-python = ">=3.11"
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Environment :: Web Environment",
     "Intended Audience :: Developers",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Topic :: Internet :: WWW/HTTP",
@@ -27,6 +28,23 @@ keywords = [
     "framework",
     "asyncio",
     "http",
+]
+
+[project.optional-dependencies]
+dev = [
+    "autopep8",
+    "coverage",
+    "mypy",
+    "pytest",
+    "pytest-asyncio",
+    "pylint",
+    "types-setuptools",
+]
+docs = [
+    "mkdocs",
+    "mkdocs-material",
+    "jetblack-markdown",
+    "mike",
 ]
 
 [project.urls]
@@ -69,3 +87,11 @@ testpaths = [
 ]
 asyncio_default_fixture_loop_scope = "session"
 asyncio_default_test_loop_scope = "function"
+
+# mypy
+[tool.mypy]
+files = [ "bareutils", "tests" ]
+
+[[tool.mypy.overrides]]
+module = "pytest"
+ignore_missing_imports = true
