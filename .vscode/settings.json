@@ -1,23 +1,29 @@
 {
   "editor.rulers": [80, 120],
   "[python]": {
-    "gitlens.codeLens.symbolScopes": ["!Module"],
-    "editor.wordBasedSuggestions": false,
-    "editor.formatOnSave": false
+    "editor.wordBasedSuggestions": "off",
+    "editor.formatOnSave": true
   },
   "python.defaultInterpreterPath": ".venv/bin/python",
-  "python.linting.pylintUseMinimalCheckers": false,
-  "python.linting.pylintEnabled": true,
-  "python.linting.mypyEnabled": true,
+  "python.testing.unittestEnabled": false,
+  "python.testing.pytestEnabled": true,
+  "python.analysis.typeCheckingMode": "strict",
+  "python.analysis.diagnosticSeverityOverrides": {
+    "reportAbstractUsage": "error"
+  },
+  "cSpell.language": "en-US",
   "cSpell.words": [
     "afes",
     "apng",
     "ASGI",
+    "asyncio",
     "Authorisation",
     "autodoc",
+    "autopep",
     "avif",
     "bareasgi",
     "bareutils",
+    "booleaness",
     "codehilite",
     "CORS",
     "Decompressor",
@@ -31,20 +37,20 @@
     "klmno",
     "mday",
     "mkdocs",
+    "mypy",
     "PHPSESSID",
     "pylint",
+    "pytest",
     "Referer",
     "Rpbjpvc",
     "sessionid",
+    "setuptools",
+    "testpaths",
     "tzinfo",
     "UNPROCESSABLE",
     "WBITS",
     "wday",
     "webp",
     "yday"
-  ],
-  "python.testing.unittestEnabled": false,
-  "python.testing.nosetestsEnabled": false,
-  "python.testing.pytestEnabled": true,
-  "python.formatting.provider": "autopep8"
+  ]
 }

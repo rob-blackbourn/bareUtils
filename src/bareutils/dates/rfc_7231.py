@@ -1,20 +1,18 @@
-"""RFC7231"""
+"""RFC 7231"""
 
 from datetime import datetime, timezone
 import re
-from typing import Optional
+
+from .constants import DAY_NAMES, MONTH_NAMES
 
 # pylint: disable=line-too-long
 # Date: <day-name>, <day> <month> <year> <hour>:<minute>:<second> GMT
 DATE_PATTERN = re.compile(
     r'^(Mon|Tue|Wed|Thu|Fri|Sat|Sun), (\d{2}) (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) (\d{4}) (\d{2}):(\d{2}):(\d{2}) GMT$'
 )
-DAY_NAMES = ("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
-MONTH_NAMES = ("Jan", "Feb", "Mar", "Apr", "May", "Jun",
-               "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
 
 
-def try_parse_date(value: str) -> Optional[datetime]:
+def try_parse_date(value: str) -> datetime | None:
     """Parse a date according to RFC 7231, section 7.1.1.2: Date
 
     Args:

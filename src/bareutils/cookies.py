@@ -3,12 +3,8 @@
 from datetime import datetime, timedelta
 from typing import (
     Any,
-    Dict,
-    List,
     Mapping,
-    MutableMapping,
-    Optional,
-    Union
+    MutableMapping
 )
 
 from .dates import parse_date
@@ -19,13 +15,13 @@ def encode_set_cookie(
         name: bytes,
         value: bytes,
         *,
-        expires: Optional[datetime] = None,
-        max_age: Optional[Union[int, timedelta]] = None,
-        path: Optional[bytes] = None,
-        domain: Optional[bytes] = None,
+        expires: datetime | None = None,
+        max_age: int | timedelta | None = None,
+        path: bytes | None = None,
+        domain: bytes | None = None,
         secure: bool = False,
         http_only: bool = False,
-        same_site: Optional[bytes] = None
+        same_site: bytes | None = None
 ) -> bytes:
     """Encode set-cookie
 
@@ -45,14 +41,13 @@ def encode_set_cookie(
         same_site (Optional[bytes], optional): CORS directive. Defaults to None.
 
     Raises:
-        RuntimeError: Raised if the __Secure- or __Host- was used without secure
-        ValueError: If a date could not be parsed.
+        ValueError: Raised if the __Secure- or __Host- was used without secure
 
     Returns:
         bytes: The set-cookie header
     """
     if not secure and (name.startswith(b'__Secure-') or name.startswith(b'__Host-')):
-        raise RuntimeError(
+        raise ValueError(
             'Keys starting __Secure- or __Host- require the secure directive'
         )
 
@@ -101,26 +96,26 @@ def decode_set_cookie(set_cookie: bytes) -> Mapping[str, Any]:
     """
     i = iter(set_cookie.split(b';'))
     key, _, value = next(i).partition(b'=')
-    result: Dict[str, Any] = {'name': key, 'value': value}
+    result: dict[str, Any] = {'name': key, 'value': value}
     for item in i:
         key, _, value = item.partition(b'=')
-        name = key.lower().strip().decode('ascii')
-        if name == 'secure':
+        name = key.lower().strip()
+        if name == b'secure':
             result['secure'] = True
-        elif name == 'httponly':
+        elif name == b'httponly':
             result['http_only'] = True
-        elif name == 'expires':
+        elif name == b'expires':
             result['expires'] = parse_date(value.decode('ascii'))
-        elif name == 'max-age':
+        elif name == b'max-age':
             result['max_age'] = timedelta(seconds=int(value))
-        elif name == 'samesite':
-            result['same_site'] = value.decode('ascii')
+        elif name == b'samesite':
+            result['same_site'] = value
         else:
-            result[name] = value
+            result[name.decode('ascii')] = value
     return result
 
 
-def encode_cookies(cookies: Mapping[bytes, List[bytes]]) -> bytes:
+def encode_cookies(cookies: Mapping[bytes, list[bytes]]) -> bytes:
     """Encode the cookie header
 
     Args:
@@ -136,16 +131,16 @@ def encode_cookies(cookies: Mapping[bytes, List[bytes]]) -> bytes:
     )
 
 
-def decode_cookies(cookies: bytes) -> Mapping[bytes, List[bytes]]:
+def decode_cookies(cookies: bytes) -> Mapping[bytes, list[bytes]]:
     """Decode a cookie header
 
     Args:
         cookies (bytes): The header
 
     Returns:
-        Mapping[bytes, List[bytes]]: The cookies
+        Mapping[bytes, list[bytes]]: The cookies
     """
-    result: MutableMapping[bytes, List[bytes]] = dict()
+    result: MutableMapping[bytes, list[bytes]] = {}
     for morsel in cookies.rstrip(b'; ').split(b'; '):
         name, _, value = morsel.partition(b'=')
         result.setdefault(name, []).append(value)
@@ -156,12 +151,12 @@ def make_cookie(
         key: bytes,
         value: bytes,
         *,
-        expires: Optional[Union[datetime, timedelta]] = None,
-        path: Optional[bytes] = None,
-        domain: Optional[bytes] = None,
+        expires: datetime | timedelta | None = None,
+        path: bytes | None = None,
+        domain: bytes | None = None,
         secure: bool = False,
         http_only: bool = False,
-        same_site: Optional[bytes] = None
+        same_site: bytes | None = None
 ) -> bytes:
     """Make a set-cookie header
 

@@ -1,13 +1,12 @@
 """Date helpers"""
 
 from datetime import datetime
-from typing import Optional
 
 from . import rfc_7231
 from . import rfc_850
 
 
-def try_parse_date(value: str) -> Optional[datetime]:
+def try_parse_date(value: str) -> datetime | None:
     """Try to parse a date
 
     Args:

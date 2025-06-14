@@ -31,6 +31,8 @@ from .cookies import (
     decode_cookies
 )
 
+__version__ = "5.0.0.alpha.1"
+
 __all__ = [
     "text_writer",
     "text_reader",

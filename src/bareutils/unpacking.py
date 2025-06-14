@@ -2,16 +2,16 @@
 
 from email.parser import BytesFeedParser
 from email.message import Message
-from typing import AsyncIterable, List, Tuple, Union
+from typing import AsyncIterable, Union
 
-MessageParams = List[Tuple[str, str]]
-MessagePayload = Union[List[Message], str, bytes, None]
+MessageParams = list[tuple[str, str]]
+MessagePayload = Union[Message, str, bytes, None]
 
 
 async def unpack_multipart_form_data(
         content_type: bytes,
         content: AsyncIterable[bytes]
-) -> List[Tuple[MessageParams, MessagePayload]]:
+) -> list[tuple[MessageParams, MessagePayload]]:
     """Unpack multipart form data
 
     Args:
@@ -22,7 +22,7 @@ async def unpack_multipart_form_data(
         AssertionError: When the problems were found with the data
 
     Returns:
-        List[Tuple[MessageParams, MessagePayload]]: The form and files
+        list[tuple[MessageParams, MessagePayload]]: The form and files
     """
     # Create the parser and prime it with the content
     # type.
@@ -43,7 +43,7 @@ async def unpack_multipart_form_data(
     msg_payload = msg.get_payload()
     assert msg_payload is not None, "The message payload should not be empty"
 
-    data: List[Tuple[MessageParams, MessagePayload]] = []
+    data: list[tuple[MessageParams, MessagePayload]] = []
     for msg_part in msg_payload:
         assert isinstance(
             msg_part, Message), "A message part should also be a message"
