@@ -39,3 +39,9 @@ You can also check the coverage.
 (.venv) $ coverage report -m
 (.venv) $ coverage html
 ```
+
+## Creating the documentation
+
+```bash
+mkdocs build
+```
