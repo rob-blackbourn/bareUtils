@@ -12,4 +12,4 @@ The package can be installed with pip.
 pip install bareutils
 ```
 
-This is a Python 3.11 and later package.
+This is a Python 3.12 and later package.

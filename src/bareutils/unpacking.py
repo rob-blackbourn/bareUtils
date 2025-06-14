@@ -4,8 +4,8 @@ from email.parser import BytesFeedParser
 from email.message import Message
 from typing import AsyncIterable, Union
 
-MessageParams = list[tuple[str, str]]
-MessagePayload = Union[Message, str, bytes, None]
+type MessageParams = list[tuple[str, str]]
+type MessagePayload = Union[Message, str, bytes, None]
 
 
 async def unpack_multipart_form_data(

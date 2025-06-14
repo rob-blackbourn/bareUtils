@@ -1,6 +1,6 @@
 """Compression utilities
 
-Only compression direclty supported by standard library functions are provided
+Only compression directly supported by standard library functions are provided
 here to avoid the need for additional dependencies. Other compression methods
 should be implemented in a separate module.
 """

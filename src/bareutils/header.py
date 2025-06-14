@@ -18,7 +18,7 @@ from typing import (
 from .cookies import decode_cookies, decode_set_cookie
 from .dates.rfc_7231 import parse_date
 
-Header = tuple[bytes, bytes]
+type Header = tuple[bytes, bytes]
 
 
 class _MergeType(Enum):
@@ -53,7 +53,7 @@ def index(name: bytes, headers: Iterable[tuple[bytes, bytes]]) -> int:
     Returns:
         int: The index of the header or -1 if not found.
     """
-    return next((i for i, (k, v) in enumerate(headers) if k == name), -1)
+    return next((i for i, (k, _) in enumerate(headers) if k == name), -1)
 
 
 def find(
@@ -331,7 +331,7 @@ ACCEPT_CHARSET = b'accept-charset'
 def _parse_accept_charset(value: bytes, *, add_wildcard: bool = False) -> Mapping[bytes, float]:
     charsets = {
         first: _parse_quality(rest) or 1.0
-        for first, sep, rest in [x.partition(b';') for x in value.split(b', ')]
+        for first, _, rest in [x.partition(b';') for x in value.split(b', ')]
     }
 
     if add_wildcard and b'*' not in charsets:
@@ -375,7 +375,7 @@ ACCEPT_ENCODING = b'accept-encoding'
 def _parse_accept_encoding(value: bytes, *, add_identity: bool = False) -> Mapping[bytes, float]:
     encodings = {
         first: _parse_quality(rest) or 1.0
-        for first, sep, rest in [x.partition(b';') for x in value.split(b', ')]
+        for first, _, rest in [x.partition(b';') for x in value.split(b', ')]
     }
 
     if add_identity and b'identity' not in encodings:
@@ -416,7 +416,7 @@ ACCEPT_LANGUAGE = b'accept-language'
 def _parse_accept_language(value: bytes, *, add_wildcard: bool = False) -> Mapping[bytes, float]:
     languages = {
         first: _parse_quality(rest) or 1.0
-        for first, sep, rest in [x.partition(b';') for x in value.split(b', ')]
+        for first, _, rest in [x.partition(b';') for x in value.split(b', ')]
     }
 
     if add_wildcard and b'*' not in languages:
@@ -669,7 +669,7 @@ def access_control_expose_headers(
 
     Args:
         headers (Iterable[tuple[bytes, bytes]]): The headers.
-        add_simple_response_headers (bool, optional): If true add the safelisted
+        add_simple_response_headers (bool, optional): If true add the safe-listed
             headers. Defaults to False.
         default (list[bytes] | None, optional): An optional default value.
             Defaults to None.
@@ -867,7 +867,7 @@ def cache_control(
         default: Mapping[bytes, int | None] | None = None
 ) -> Mapping[bytes, int | None] | None:
     """The Cache-Control general-header field is used to specify directives for
-    caching mechanisms in both requests andresponses. Caching directives are
+    caching mechanisms in both requests and responses. Caching directives are
     unidirectional, meaning that a given directive in a request is not implying
     that the same directive is to be given in the response.
 
@@ -947,7 +947,7 @@ def _parse_content_disposition(
     media_type, sep, rest = value.partition(b';')
     parameters = {
         first.strip(): rest.strip(b'"')
-        for first, sep, rest in [x.partition(b'=') for x in rest.split(b';')] if first
+        for first, _, rest in [x.partition(b'=') for x in rest.split(b';')] if first
     } if sep == b';' else None
 
     return media_type, parameters
@@ -1220,8 +1220,8 @@ def _parse_content_type(
     media_type, sep, rest = value.partition(b';')
     parameters = {
         first.strip(): rest.strip()
-        for first, sep, rest in [x.partition(b'=')
-                                 for x in rest.split(b';')]
+        for first, _, rest in [x.partition(b'=')
+                               for x in rest.split(b';')]
         if first
     } if sep == b';' else None
 
