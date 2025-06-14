@@ -1754,17 +1754,18 @@ def collect(headers: Iterable[tuple[bytes, bytes]]) -> dict[bytes, Any]:
     collection: dict[bytes, Any] = {}
     for name, value in headers:
         parser = _PARSERS.get(name, _DEFAULT_PARSER)
-        if parser.merge_type == _MergeType.APPEND:
-            result = parser.parse(value)
-            collection.setdefault(name, []).append(result)
-        elif parser.merge_type == _MergeType.CONCAT:
-            result = parser.parse(value)
-            collection.setdefault(name, []).extend(result)
-        elif parser.merge_type == _MergeType.EXTEND:
-            result = parser.parse(value)
-            dct = collection.setdefault(name, {})
-            for k, v in result.items():
-                dct.setdefault(k, []).extend(v)
-        else:
-            collection[name] = parser.parse(value)
+        match parser.merge_type:
+            case _MergeType.APPEND:
+                result = parser.parse(value)
+                collection.setdefault(name, []).append(result)
+            case _MergeType.CONCAT:
+                result = parser.parse(value)
+                collection.setdefault(name, []).extend(result)
+            case _MergeType.EXTEND:
+                result = parser.parse(value)
+                dct = collection.setdefault(name, {})
+                for k, v in result.items():
+                    dct.setdefault(k, []).extend(v)
+            case _:
+                collection[name] = parser.parse(value)
     return collection

@@ -84,8 +84,8 @@ def encode_set_cookie(
 def decode_set_cookie(set_cookie: bytes) -> Mapping[str, Any]:
     """Decode a set-cookie header into a dictionary.
 
-    The `max-age` value is represented as a `datatime.timedelta`.
-    The `expires` value is represented as a `datetine.datetime`.
+    The `max-age` value is represented as a `datetime.timedelta`.
+    The `expires` value is represented as a `datetime.datetime`.
     The `secure` value is represented as a `bool`.
 
     Args:
@@ -99,19 +99,19 @@ def decode_set_cookie(set_cookie: bytes) -> Mapping[str, Any]:
     result: dict[str, Any] = {'name': key, 'value': value}
     for item in i:
         key, _, value = item.partition(b'=')
-        name = key.lower().strip()
-        if name == b'secure':
-            result['secure'] = True
-        elif name == b'httponly':
-            result['http_only'] = True
-        elif name == b'expires':
-            result['expires'] = parse_date(value.decode('ascii'))
-        elif name == b'max-age':
-            result['max_age'] = timedelta(seconds=int(value))
-        elif name == b'samesite':
-            result['same_site'] = value
-        else:
-            result[name.decode('ascii')] = value
+        match key.lower().strip():
+            case b'secure':
+                result['secure'] = True
+            case b'httponly':
+                result['http_only'] = True
+            case b'expires':
+                result['expires'] = parse_date(value.decode('ascii'))
+            case b'max-age':
+                result['max_age'] = timedelta(seconds=int(value))
+            case b'samesite':
+                result['same_site'] = value
+            case name:
+                result[name.decode('ascii')] = value
     return result
 
 
