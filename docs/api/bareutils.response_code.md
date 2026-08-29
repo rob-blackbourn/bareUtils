@@ -1,1 +1,0 @@
-@[bareutils.response_code]

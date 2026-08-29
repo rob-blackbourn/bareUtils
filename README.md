@@ -1,15 +1,4 @@
-# bareutils
+# bareUtils
 
-Utilities for [bareASGI](https://github.com/rob-blackbourn/bareASGI)
-and [bareClient](https://github.com/rob-blackbourn/bareClient)
-(read the [docs](https://rob-blackbourn.github.io/bareUtils/)).
+The project has moved to a new [repo](https://github.com/bareASGI/bareUtils).
 
-## Installation
-
-The package can be installed with pip.
-
-```bash
-pip install bareutils
-```
-
-This is a Python 3.11 and later package.
